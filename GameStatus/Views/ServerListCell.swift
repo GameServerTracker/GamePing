@@ -17,8 +17,8 @@ struct ServerListCell: View {
                     if server.image != nil {
                         ServerIconImage(base64Image: server.image)
                     } else {
-                        ServerIconDefault(iconImage: Image(systemName: "server.rack"),
-                                          gradientColors: [.brandPrimary, .gray],
+                        ServerIconDefault(iconImage: Image("serverLogo"),
+                                          gradientColors: [.brandPrimary],
                                           iconSize: 32
                         )
                     }
@@ -45,11 +45,11 @@ struct ServerListCell: View {
                     if server.response!.online {
                         HStack(spacing: 4) {
                             Image(systemName: (server.response!.player!.online > 0 ? "person.fill" : "person.slash.fill"))
-                                .foregroundStyle((server.response!.player!.online > 0 ? .green : .gray))
+                                .foregroundStyle((server.response!.player!.online > 0 ? .statusOnline : .gray))
                                 .symbolRenderingMode(.hierarchical)
                             Text("\(server.response!.player?.online ?? 0)")
                                 .font(.callout)
-                                .foregroundStyle((server.response!.player!.online > 0 ? .green : .gray))
+                                .foregroundStyle((server.response!.player!.online > 0 ? .statusOnline : .gray))
                                 .fontWeight(.medium)
                                 .lineLimit(1)
                         }
@@ -59,12 +59,12 @@ struct ServerListCell: View {
                     } else {
                         Text("Offline")
                             .font(.callout)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(.statusOffline)
                             .fontWeight(.medium)
                             .lineLimit(1)
                     }
                 }
-            }.frame(width: 110, alignment: .trailing)
+            }.frame(width: 100, alignment: .trailing)
         }
     }
 }

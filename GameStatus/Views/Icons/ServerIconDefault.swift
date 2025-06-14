@@ -20,7 +20,7 @@ struct ServerIconDefault: View {
     }
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 14)
+        RoundedRectangle(cornerRadius: 18)
             .fill(
                 LinearGradient(
                     gradient: Gradient(colors: gradientColors),

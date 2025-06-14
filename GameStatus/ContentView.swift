@@ -9,23 +9,32 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            NavigationView {
-                VStack {
-                    List(MockData.gameServers, id: \.id) { server in
+        NavigationView {
+            ZStack {
+                Color(.background)
+                    .ignoresSafeArea()
+                List(MockData.gameServers, id: \.id) { server in
+                    NavigationLink {
+                        ServerDetailsView(server: server)
+                    } label: {
                         ServerListCell(server: server)
                     }
-                }.navigationTitle("Servers")
-            }.safeAreaInset(edge: .bottom, spacing: 0) {
+                    .listRowBackground(Color.clear)
+                }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+            }
+            .navigationTitle("Servers")
+            .overlay(alignment: .bottomTrailing) {
                 HStack {
                     Spacer()
                     Button {
-                        
+                        // Todo
                     } label: {
                         Image(systemName: "plus")
                             .imageScale(.large)
                             .frame(width: 64, height: 64)
-                            .foregroundColor(Color.white)
+                            .foregroundColor(.white)
                             .background(Color.brandPrimary)
                             .clipShape(Circle())
                             .shadow(radius: 2.5)

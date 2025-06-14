@@ -23,12 +23,12 @@ struct ServerIconImage: View {
             Image(uiImage: uiImage)
                 .resizable()
                 .scaledToFill()
-                .cornerRadius(14)
+                .cornerRadius(18)
                 .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 2)
                 
         } else {
-            ServerIconDefault(iconImage: Image(systemName: "star.fill"),
-                              gradientColors: [.yellow, .orange]
+            ServerIconDefault(iconImage: Image("serverLogo"),
+                              gradientColors: [.brandPrimary]
             )
         }
     }
