@@ -88,12 +88,12 @@ struct ServerDetailsView: View {
                     .fontWeight(.bold)
                 ScrollView {
                     VStack(spacing: 10) {
-                        ForEach(0..<100) {
+                        ForEach(0..<20) {
                             Text("Item \($0)")
                                 .font(.title)
                         }
                     }
-                }.frame(width: .infinity)
+                }
             }.padding(15)
             Spacer()
         }.background(Color.background)
