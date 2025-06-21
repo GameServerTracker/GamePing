@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ServerListView: View {
+    @StateObject private var viewModel: ServerListViewModel = .init()
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -29,7 +31,7 @@ struct ServerListView: View {
                 HStack {
                     Spacer()
                     Button {
-                        // Todo
+                        viewModel.showAddServerModal = true
                     } label: {
                         Image(systemName: "plus")
                             .imageScale(.large)
@@ -41,6 +43,8 @@ struct ServerListView: View {
                     }.padding(.horizontal)
                 }
             }
+        }.sheet(isPresented: $viewModel.showAddServerModal) {
+            ServerFormView(isShowing: $viewModel.showAddServerModal).presentationBackground(Color.background)
         }
     }
 }

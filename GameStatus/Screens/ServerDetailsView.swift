@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ServerDetailsView: View {
     let server: GameServer
-
+    
     var body: some View {
         VStack(alignment: .leading) {
             VStack {
@@ -97,6 +97,23 @@ struct ServerDetailsView: View {
             }.padding(15)
             Spacer()
         }.background(Color.background)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(Color.statusOffline)
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "slider.vertical.3")
+                    }
+                }
+            }
     }
 }
 
@@ -139,7 +156,7 @@ struct TextDetailsView: View {
                 .foregroundStyle(.secondary)
                 .font(.caption)
                 .fontWeight(.bold)
-            VStack(){
+            VStack() {
                 Text(content)
                     .foregroundStyle(.secondary)
                     .fontWeight(.bold)
