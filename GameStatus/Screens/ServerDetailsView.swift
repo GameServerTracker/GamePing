@@ -6,9 +6,15 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ServerDetailsView: View {
     let server: GameServer
+    
+    @Query private var gameServers: [GameServer]
+    @Environment(\.modelContext) private var context;
+    @Environment(\.dismiss) private var dismiss;
+    @State private var showingConfirmationDelete = false
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -100,10 +106,25 @@ struct ServerDetailsView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        
+                        showingConfirmationDelete = true
                     } label: {
                         Image(systemName: "trash")
                             .foregroundStyle(Color.statusOffline)
+                    }
+                    .confirmationDialog("Are you sure you want to delete this server?", isPresented: $showingConfirmationDelete) {
+                        Button("Delete", role: .destructive) {
+                            do {
+                                context.delete(server)
+                                try context.save()
+                                dismiss()
+                            } catch {
+                                // Gérer l'erreur (optionnel)
+                                print("Erreur lors de la suppression du serveur : \(error)")
+                            }
+                        }
+                        Button("Cancel", role: .cancel) {
+                            showingConfirmationDelete = false
+                        }
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -119,6 +140,7 @@ struct ServerDetailsView: View {
 
 #Preview {
     ServerDetailsView(server: MockData.gameServers.last!)
+        .modelContainer(for: GameServer.self, inMemory: true)
 }
 
 struct ImageDetailsView: View {

@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct GameStatusApp: App {
     var body: some Scene {
         WindowGroup {
             ServerListView()
+                .modelContainer(for: GameServer.self)
         }
     }
 }

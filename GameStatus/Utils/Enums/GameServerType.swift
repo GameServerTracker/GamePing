@@ -5,7 +5,7 @@
 //  Created by Tom on 21/06/2025.
 //
 
-enum GameServerType: String, CaseIterable, Identifiable {
+enum GameServerType: String, CaseIterable, Identifiable, Codable {
     case minecraft = "mc"
     case minecraftBedrock = "mcbd"
     case source = "source"
@@ -14,3 +14,11 @@ enum GameServerType: String, CaseIterable, Identifiable {
     
     var id: Self { self }
 }
+
+let gameServerTypesDisplayName: [String: String] = [
+    GameServerType.minecraft.rawValue: "Minecraft",
+    GameServerType.minecraftBedrock.rawValue: "Minecraft Bedrock",
+    GameServerType.source.rawValue: "Source",
+    GameServerType.fivem.rawValue: "FiveM",
+    GameServerType.unknown.rawValue: "Unknown",
+];

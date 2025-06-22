@@ -27,7 +27,7 @@ struct ServerListCell: View {
                     Text(server.name)
                         .font(.headline)
                         .fontWeight(.medium)
-                    Text(server.type)
+                    Text(gameServerTypesDisplayName[server.type]!)
                         .foregroundColor(.secondary)
                         .font(.footnote)
                         .fontWeight(.semibold)
@@ -36,34 +36,37 @@ struct ServerListCell: View {
             }
             .frame(width: 210, alignment: .leading)
             VStack(alignment: .trailing) {
-                if server.response!.isQuerying {
-                    ProgressView("Pinging...")
-                        .font(.callout)
-                        .progressViewStyle(CircularProgressViewStyle(tint: .brandPrimary))
-                    
-                } else {
-                    if server.response!.online {
-                        HStack(spacing: 4) {
-                            Image(systemName: (server.response!.player!.online > 0 ? "person.fill" : "person.slash.fill"))
-                                .foregroundStyle((server.response!.player!.online > 0 ? .statusOnline : .gray))
-                                .symbolRenderingMode(.hierarchical)
-                            Text("\(server.response!.player?.online ?? 0)")
-                                .font(.callout)
-                                .foregroundStyle((server.response!.player!.online > 0 ? .statusOnline : .gray))
-                                .fontWeight(.medium)
-                                .lineLimit(1)
-                        }
-                        Text("\(server.response!.ping ?? 0) ms")
-                            .font(.callout)
-                            .lineLimit(1)
-                    } else {
-                        Text("Offline")
-                            .font(.callout)
-                            .foregroundStyle(.statusOffline)
-                            .fontWeight(.medium)
-                            .lineLimit(1)
-                    }
-                }
+                ProgressView("Pinging...")
+                    .font(.callout)
+                    .progressViewStyle(CircularProgressViewStyle(tint: .brandPrimary))
+//                if server.response!.isQuerying {
+//                ProgressView("Pinging...")
+//                    .font(.callout)
+//                    .progressViewStyle(CircularProgressViewStyle(tint: .brandPrimary))
+//                    
+//                } else {
+//                    if server.response!.online {
+//                        HStack(spacing: 4) {
+//                            Image(systemName: (server.response!.player!.online > 0 ? "person.fill" : "person.slash.fill"))
+//                                .foregroundStyle((server.response!.player!.online > 0 ? .statusOnline : .gray))
+//                                .symbolRenderingMode(.hierarchical)
+//                            Text("\(server.response!.player?.online ?? 0)")
+//                                .font(.callout)
+//                                .foregroundStyle((server.response!.player!.online > 0 ? .statusOnline : .gray))
+//                                .fontWeight(.medium)
+//                                .lineLimit(1)
+//                        }
+//                        Text("\(server.response!.ping ?? 0) ms")
+//                            .font(.callout)
+//                            .lineLimit(1)
+//                    } else {
+//                        Text("Offline")
+//                            .font(.callout)
+//                            .foregroundStyle(.statusOffline)
+//                            .fontWeight(.medium)
+//                            .lineLimit(1)
+//                    }
+//                }
             }.frame(width: 100, alignment: .trailing)
         }
     }

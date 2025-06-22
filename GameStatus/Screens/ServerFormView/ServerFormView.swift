@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ServerFormView: View {
+    
+    @Query private var gameServers: [GameServer]
+    @Environment(\.modelContext) private var context
     
     @StateObject var viewModel: ServerFormViewModel = ServerFormViewModel()
     @FocusState private var focusedTextField: FormTextField?
@@ -50,7 +54,15 @@ struct ServerFormView: View {
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Button {
-                            
+                            let newServer: GameServer = GameServer(
+                                name: viewModel.serverName,
+                                address: viewModel.serverAddress,
+                                port: viewModel.serverPort ?? 8080,
+                                type: viewModel.serverType,
+                                image: nil
+                            )
+                            context.insert(newServer)
+                            isShowing = false
                         } label: {
                             Text("Save")
                         }
@@ -69,4 +81,5 @@ struct ServerFormView: View {
 
 #Preview {
     ServerFormView(isShowing: .constant(true))
+        .modelContainer(for: GameServer.self, inMemory: true)
 }
