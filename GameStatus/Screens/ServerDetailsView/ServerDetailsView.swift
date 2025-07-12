@@ -61,9 +61,7 @@ struct ServerDetailsView: View {
                                     .background(.statusOnline)
                                     .clipShape(Capsule())
                             }
-                            Button {
-                                
-                            } label: {
+                            ShareLink(item: "\(server.name)\n\(server.address)") {
                                 Image(systemName: "square.and.arrow.up")
                                     .font(.system(size: 20))
                                     .foregroundStyle(.brandPrimary)
