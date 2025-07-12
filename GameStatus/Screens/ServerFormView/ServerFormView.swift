@@ -9,14 +9,21 @@ import SwiftUI
 import SwiftData
 
 struct ServerFormView: View {
-    
-    @Query private var gameServers: [GameServer]
+
+    let server: GameServer?
+
     @Environment(\.modelContext) private var context
     
-    @StateObject var viewModel: ServerFormViewModel = ServerFormViewModel()
+    @StateObject var viewModel: ServerFormViewModel
     @FocusState private var focusedTextField: FormTextField?
-    
+
     @Binding var isShowing: Bool
+
+    init(server: GameServer?, isShowing: Binding<Bool>) {
+        self.server = server
+        self._isShowing = isShowing
+        _viewModel = StateObject(wrappedValue: ServerFormViewModel(server: server))
+    }
     
     enum FormTextField: Hashable {
         case hostname, name
@@ -54,14 +61,7 @@ struct ServerFormView: View {
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Button {
-                            let newServer: GameServer = GameServer(
-                                name: viewModel.serverName,
-                                address: viewModel.serverAddress,
-                                port: viewModel.serverPort ?? 8080,
-                                type: viewModel.serverType,
-                                image: nil
-                            )
-                            context.insert(newServer)
+                            viewModel.save(context: context)
                             isShowing = false
                         } label: {
                             Text("Save")
@@ -80,6 +80,6 @@ struct ServerFormView: View {
 }
 
 #Preview {
-    ServerFormView(isShowing: .constant(true))
+    ServerFormView(server: nil, isShowing: .constant(true))
         .modelContainer(for: GameServer.self, inMemory: true)
 }

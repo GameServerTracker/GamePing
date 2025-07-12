@@ -22,3 +22,11 @@ let gameServerTypesDisplayName: [String: String] = [
     GameServerType.fivem.rawValue: "FiveM",
     GameServerType.unknown.rawValue: "Unknown",
 ];
+
+let gameServerTypesPort: [String: Int] = [
+    GameServerType.minecraft.rawValue: 25565,
+    GameServerType.minecraftBedrock.rawValue: 19132,
+    GameServerType.source.rawValue: 27015,
+    GameServerType.fivem.rawValue: 30120,
+    GameServerType.unknown.rawValue: 0,
+];

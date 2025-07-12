@@ -67,7 +67,7 @@ struct ServerListView: View {
                 }
             }
         }.sheet(isPresented: $viewModel.showAddServerModal) {
-            ServerFormView(isShowing: $viewModel.showAddServerModal).presentationBackground(Color.background)
+            ServerFormView(server: nil, isShowing: $viewModel.showAddServerModal).presentationBackground(Color.background)
         }
     }
 }

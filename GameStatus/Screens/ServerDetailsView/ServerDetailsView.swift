@@ -14,7 +14,9 @@ struct ServerDetailsView: View {
     @Query private var gameServers: [GameServer]
     @Environment(\.modelContext) private var context;
     @Environment(\.dismiss) private var dismiss;
-    @State private var showingConfirmationDelete = false
+
+    @State private var showingConfirmationDelete: Bool = false
+    @State private var showEditServerModal: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -79,7 +81,7 @@ struct ServerDetailsView: View {
                     Divider().frame(height: 55)
                     TextDetailsView(title: "VERSION", content: "2025.03.26", subtitle: nil)
                     Divider().frame(height: 55)
-                    TextDetailsView(title: "Map", content: "rp_rockford_v2b  ", subtitle: nil)
+                    TextDetailsView(title: "MAP", content: "rp_rockford_v2b", subtitle: nil)
                     Divider().frame(height: 55)
                     ImageDetailsView(title: "OS", image: Image("linux_icon"), subtitle: "Linux")
                 }.frame(height: 90)
@@ -118,8 +120,7 @@ struct ServerDetailsView: View {
                                 try context.save()
                                 dismiss()
                             } catch {
-                                // Gérer l'erreur (optionnel)
-                                print("Erreur lors de la suppression du serveur : \(error)")
+                                print("Error during the deletion: \(error)")
                             }
                         }
                         Button("Cancel", role: .cancel) {
@@ -129,18 +130,16 @@ struct ServerDetailsView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        
+                        showEditServerModal = true
                     } label: {
                         Image(systemName: "slider.vertical.3")
                     }
                 }
             }
+            .sheet(isPresented: $showEditServerModal) {
+                ServerFormView(server: server, isShowing: $showEditServerModal).presentationBackground(Color.background)
+            }
     }
-}
-
-#Preview {
-    ServerDetailsView(server: MockData.gameServers.last!)
-        .modelContainer(for: GameServer.self, inMemory: true)
 }
 
 struct ImageDetailsView: View {
@@ -193,4 +192,9 @@ struct TextDetailsView: View {
             }
         }.frame(maxWidth: .infinity)
     }
+}
+
+#Preview {
+    ServerDetailsView(server: MockData.gameServers.last!)
+        .modelContainer(for: GameServer.self, inMemory: true)
 }
