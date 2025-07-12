@@ -27,7 +27,7 @@ struct ServerListView: View {
                             NavigationLink {
                                 ServerDetailsView(server: server)
                             } label: {
-                                ServerListCell(server: server)
+                                ServerListCell(server: server, selectedServer: $viewModel.selectedServer)
                             }
                             .listRowBackground(Color.clear)
                         }
@@ -55,6 +55,7 @@ struct ServerListView: View {
                     Spacer()
                     Button {
                         viewModel.showAddServerModal = true
+                        viewModel.selectedServer = nil
                     } label: {
                         Image(systemName: "plus")
                             .imageScale(.large)
@@ -67,7 +68,7 @@ struct ServerListView: View {
                 }
             }
         }.sheet(isPresented: $viewModel.showAddServerModal) {
-            ServerFormView(server: nil, isShowing: $viewModel.showAddServerModal).presentationBackground(Color.background)
+            ServerFormView(server: viewModel.selectedServer, isShowing: $viewModel.showAddServerModal).presentationBackground(Color.background)
         }
     }
 }

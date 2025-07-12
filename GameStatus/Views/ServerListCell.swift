@@ -6,9 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ServerListCell: View {
     let server: GameServer
+    
+    @Binding var selectedServer: GameServer?
+    
+    @Environment(\.modelContext) private var context;
 
     var body: some View {
         HStack {
@@ -68,11 +73,22 @@ struct ServerListCell: View {
 //                    }
 //                }
             }.frame(width: 100, alignment: .trailing)
+        }.swipeActions(edge: .trailing) {
+            Button (role: .destructive) {
+                context.delete(server)
+            } label: {
+                Label("Delete", systemImage: "trash.fill")
+            }
+            Button {
+                selectedServer = server
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
         }
     }
 }
 
 #Preview {
-    ServerListCell(server: MockData.gameServers.first!)
-    ServerListCell(server: MockData.gameServers.last!)
+    ServerListCell(server: MockData.gameServers.first!, selectedServer: .constant(nil))
+    ServerListCell(server: MockData.gameServers.last!, selectedServer: .constant(nil))
 }
