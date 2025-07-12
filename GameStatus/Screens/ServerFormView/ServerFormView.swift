@@ -57,7 +57,7 @@ struct ServerFormView: View {
                     TextField("Port", value: $viewModel.serverPort, format: .number)
                         .keyboardType(.numberPad)
                 }
-            }.navigationTitle(Text("Add a server"))
+            }.navigationTitle(Text(server == nil ? "Add a server" : "Edit server"))
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Button {
