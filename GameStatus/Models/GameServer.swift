@@ -10,34 +10,40 @@ import SwiftData
 
 @Model
 class GameServer {
+    @Attribute(.unique) var id: UUID
     var name: String
     var address: String
     var port: Int
     var type: String
     var image: String?
-    //var response: GameServerResponse?
     
     init(name: String, address: String, port: Int, type: GameServerType, image: String? = nil) {
+        self.id = UUID()
         self.name = name
         self.address = address
         self.port = port
         self.type = type.rawValue
         self.image = image
-        //self.response = MockData.sampleGameServerResponse
     }
 }
 
-struct ServerPlayers {
-    let online: Int
-    let max: Int
-    let sample: [String]
-}
+struct GameServerResponse: Decodable {
+    var address: String
+    var port: Int
+    var online: Bool
+    var players: ServerPlayers?
+    var favicon: String?
+    var ping: Int?
+    
+    // Source
+    var OS: String?
+    var map: String?
 
-struct GameServerResponse {
-    let online: Bool
-    let isQuerying: Bool
-    let player: ServerPlayers?
-    let ping: Int?
+    struct ServerPlayers: Decodable {
+        var online: Int
+        var max: Int
+        var sample: [String]?
+    }
     
 }
 
@@ -61,48 +67,48 @@ struct MockData {
         .init(name: "LePtitDarkRP", address: "play.wynncraft.net", port: 27015, type: .source, image: nil),
     ]
     
-    static let gameServerResponses: [GameServerResponse] = [
-        .init(
-            online: false,
-            isQuerying: true,
-            player: nil,
-            ping: nil
-        ),
-        .init(
-            online: false,
-            isQuerying: false,
-            player: nil,
-            ping: nil
-        ),
-        .init(
-            online: true,
-            isQuerying: false,
-            player: .init(online: 83, max: 100, sample: []),
-            ping: 42
-        ),
-        .init(
-            online: true,
-            isQuerying: false,
-            player: .init(online: 12, max: 100, sample: ["BliTz_37", "Ertinox45", "Batisseurr", "Tibzee", "Akirabane", "Emperreur_Bonobo", "Alexidre"]),
-            ping: 42
-        ),
-        .init(
-            online: true,
-            isQuerying: false,
-            player: .init(online: 0, max: 10, sample: ["Pepito", "Dynamix76", "Bamiot95"]),
-            ping: 124
-        ),
-        .init(
-            online: true,
-            isQuerying: false,
-            player: .init(online: 24, max: 100, sample: ["BliTz_37", "Ertinox45", "Batisseurr", "Tibzee", "Akirabane", "Emperreur_Bonobo", "Alexidre"]),
-            ping: 42
-        ),
-    ]
-    
-    static let sampleGameServerResponse: GameServerResponse = .init(
-        online: true,
-        isQuerying: false,
-        player: .init(online: 12, max: 100, sample: ["BliTz_37", "Ertinox45", "Batisseurr", "Tibzee", "Akirabane", "Emperreur_Bonobo", "Alexidre"]),
-        ping: 42)
+//    static let gameServerResponses: [GameServerResponse] = [
+//        .init(
+//            online: false,
+//            isQuerying: true,
+//            player: nil,
+//            ping: nil
+//        ),
+//        .init(
+//            online: false,
+//            isQuerying: false,
+//            player: nil,
+//            ping: nil
+//        ),
+//        .init(
+//            online: true,
+//            isQuerying: false,
+//            player: .init(online: 83, max: 100, sample: []),
+//            ping: 42
+//        ),
+//        .init(
+//            online: true,
+//            isQuerying: false,
+//            player: .init(online: 12, max: 100, sample: ["BliTz_37", "Ertinox45", "Batisseurr", "Tibzee", "Akirabane", "Emperreur_Bonobo", "Alexidre"]),
+//            ping: 42
+//        ),
+//        .init(
+//            online: true,
+//            isQuerying: false,
+//            player: .init(online: 0, max: 10, sample: ["Pepito", "Dynamix76", "Bamiot95"]),
+//            ping: 124
+//        ),
+//        .init(
+//            online: true,
+//            isQuerying: false,
+//            player: .init(online: 24, max: 100, sample: ["BliTz_37", "Ertinox45", "Batisseurr", "Tibzee", "Akirabane", "Emperreur_Bonobo", "Alexidre"]),
+//            ping: 42
+//        ),
+//    ]
+//    
+//    static let sampleGameServerResponse: GameServerResponse = .init(
+//        online: true,
+//        isQuerying: false,
+//        player: .init(online: 12, max: 100, sample: ["BliTz_37", "Ertinox45", "Batisseurr", "Tibzee", "Akirabane", "Emperreur_Bonobo", "Alexidre"]),
+//        ping: 42)
 }

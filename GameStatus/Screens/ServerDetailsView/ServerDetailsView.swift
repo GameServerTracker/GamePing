@@ -10,6 +10,7 @@ import SwiftData
 
 struct ServerDetailsView: View {
     let server: GameServer
+    let response: GameServerResponse?
     
     @Query private var gameServers: [GameServer]
     @Environment(\.modelContext) private var context;
@@ -22,8 +23,8 @@ struct ServerDetailsView: View {
         VStack(alignment: .leading) {
             VStack {
                 HStack {
-                    if server.image != nil {
-                        ServerIconImage(base64Image: server.image)
+                    if response?.favicon != nil {
+                        ServerIconImage(base64Image: response?.favicon)
                             .frame(width: 102, height: 102)
                     } else {
                         ServerIconDefault(iconImage: Image("serverLogo"),
@@ -42,24 +43,32 @@ struct ServerDetailsView: View {
                             .lineLimit(1)
                         HStack (spacing: 10) {
                             HStack {
-                                Text("Online")
+                                Text(
+                                    response == nil ? "Pinging..." :
+                                    (response!.online ? "Online" : "Offline")
+                                )
                                     .font(.caption)
                                     .fontWeight(.bold)
                                     .padding(8)
-                                    .background(.statusOnline)
+                                    .background(
+                                        response == nil ? .brandPrimary :
+                                        (response!.online ? .statusOnline : .statusOffline)
+                                    )
                                     .clipShape(Capsule())
-                                Label("123", systemImage: "person.fill")
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                                    .padding(8)
-                                    .background(.statusOnline)
-                                    .clipShape(Capsule())
-                                Text("128ms")
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                                    .padding(8)
-                                    .background(.statusOnline)
-                                    .clipShape(Capsule())
+                                if (response?.online == true) {
+                                    Label("\(response?.players?.online ?? 0)", systemImage: "person.fill")
+                                        .font(.caption)
+                                        .fontWeight(.bold)
+                                        .padding(8)
+                                        .background(.statusOnline)
+                                        .clipShape(Capsule())
+                                    Text("\(response!.ping ?? 0) ms")
+                                        .font(.caption)
+                                        .fontWeight(.bold)
+                                        .padding(8)
+                                        .background(.statusOnline)
+                                        .clipShape(Capsule())
+                                }
                             }
                             ShareLink(item: "\(server.name)\n\(server.address)") {
                                 Image(systemName: "square.and.arrow.up")
@@ -73,15 +82,19 @@ struct ServerDetailsView: View {
                 .padding(.leading, 20)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack (alignment: .top) {
-                    ImageDetailsView(title: "TYPE", image: Image("minecraft_icon"), subtitle: "Minecraft")
+                    ImageDetailsView(title: "TYPE", image: Image(gameServerTypesIconName[server.type] ?? "questionmark.circle.fill"), subtitle: gameServerTypesDisplayName[server.type] ?? "Unknown")
                     Divider().frame(height: 55)
-                    TextDetailsView(title: "MAX PLAYERS", content: "10 000", subtitle: "Players")
+                    TextDetailsView(title: "MAX PLAYERS", content: "\(response?.players?.online ?? 0)", subtitle: nil)
                     Divider().frame(height: 55)
                     TextDetailsView(title: "VERSION", content: "2025.03.26", subtitle: nil)
-                    Divider().frame(height: 55)
-                    TextDetailsView(title: "MAP", content: "rp_rockford_v2b", subtitle: nil)
-                    Divider().frame(height: 55)
-                    ImageDetailsView(title: "OS", image: Image("linux_icon"), subtitle: "Linux")
+                    if (response?.map != nil) {
+                        Divider().frame(height: 55)
+                        TextDetailsView(title: "MAP", content: "rp_rockford_v2b", subtitle: nil)
+                    }
+                    if (response?.OS != nil) {
+                        Divider().frame(height: 55)
+                        ImageDetailsView(title: "OS", image: Image("linux_icon"), subtitle: "Linux")
+                    }
                 }.frame(height: 90)
                     .overlay(Divider(), alignment: .top)
                     .padding(.horizontal)
@@ -193,6 +206,6 @@ struct TextDetailsView: View {
 }
 
 #Preview {
-    ServerDetailsView(server: MockData.gameServers.last!)
+    ServerDetailsView(server: MockData.gameServers.last!, response: nil)
         .modelContainer(for: GameServer.self, inMemory: true)
 }

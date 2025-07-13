@@ -5,26 +5,28 @@
 //  Created by Tom on 11/05/2025.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ServerListCell: View {
     let server: GameServer
-    
+    let response: GameServerResponse?
+
     @Binding var selectedServer: GameServer?
-    
-    @Environment(\.modelContext) private var context;
+
+    @Environment(\.modelContext) private var context
 
     var body: some View {
         HStack {
             HStack {
                 HStack {
-                    if server.image != nil {
-                        ServerIconImage(base64Image: server.image)
+                    if response?.favicon != nil {
+                        ServerIconImage(base64Image: response?.favicon)
                     } else {
-                        ServerIconDefault(iconImage: Image("serverLogo"),
-                                          gradientColors: [.brandPrimary],
-                                          iconSize: 32
+                        ServerIconDefault(
+                            iconImage: Image("serverLogo"),
+                            gradientColors: [.brandPrimary],
+                            iconSize: 32
                         )
                     }
                 }.frame(width: 64, height: 64)
@@ -41,40 +43,48 @@ struct ServerListCell: View {
             }
             .frame(width: 210, alignment: .leading)
             VStack(alignment: .trailing) {
-                ProgressView("Pinging...")
-                    .font(.callout)
-                    .progressViewStyle(CircularProgressViewStyle(tint: .brandPrimary))
-//                if server.response!.isQuerying {
-//                ProgressView("Pinging...")
-//                    .font(.callout)
-//                    .progressViewStyle(CircularProgressViewStyle(tint: .brandPrimary))
-//                    
-//                } else {
-//                    if server.response!.online {
-//                        HStack(spacing: 4) {
-//                            Image(systemName: (server.response!.player!.online > 0 ? "person.fill" : "person.slash.fill"))
-//                                .foregroundStyle((server.response!.player!.online > 0 ? .statusOnline : .gray))
-//                                .symbolRenderingMode(.hierarchical)
-//                            Text("\(server.response!.player?.online ?? 0)")
-//                                .font(.callout)
-//                                .foregroundStyle((server.response!.player!.online > 0 ? .statusOnline : .gray))
-//                                .fontWeight(.medium)
-//                                .lineLimit(1)
-//                        }
-//                        Text("\(server.response!.ping ?? 0) ms")
-//                            .font(.callout)
-//                            .lineLimit(1)
-//                    } else {
-//                        Text("Offline")
-//                            .font(.callout)
-//                            .foregroundStyle(.statusOffline)
-//                            .fontWeight(.medium)
-//                            .lineLimit(1)
-//                    }
-//                }
+                if response != nil {
+                    if response!.online {
+                        HStack(spacing: 4) {
+                            Image(
+                                systemName: (response!.players!.online > 0
+                                    ? "person.fill" : "person.slash.fill")
+                            )
+                            .foregroundStyle(
+                                (response!.players!.online > 0
+                                    ? .statusOnline : .gray)
+                            )
+                            .symbolRenderingMode(.hierarchical)
+                            Text("\(response!.players?.online ?? 0)")
+                                .font(.callout)
+                                .foregroundStyle(
+                                    (response!.players!.online > 0
+                                        ? .statusOnline : .gray)
+                                )
+                                .fontWeight(.medium)
+                                .lineLimit(1)
+                        }
+                        Text("\(response!.ping ?? 0) ms")
+                            .font(.callout)
+                            .lineLimit(1)
+                    } else {
+                        Text("Offline")
+                            .font(.callout)
+                            .foregroundStyle(.statusOffline)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                    }
+
+                } else {
+                    ProgressView("Pinging...")
+                        .font(.callout)
+                        .progressViewStyle(
+                            CircularProgressViewStyle(tint: .brandPrimary)
+                        )
+                }
             }.frame(width: 100, alignment: .trailing)
         }.swipeActions(edge: .trailing) {
-            Button (role: .destructive) {
+            Button(role: .destructive) {
                 context.delete(server)
             } label: {
                 Label("Delete", systemImage: "trash.fill")
@@ -89,6 +99,9 @@ struct ServerListCell: View {
 }
 
 #Preview {
-    ServerListCell(server: MockData.gameServers.first!, selectedServer: .constant(nil))
-    ServerListCell(server: MockData.gameServers.last!, selectedServer: .constant(nil))
+    ServerListCell(
+        server: MockData.gameServers.first!,
+        response: nil,
+        selectedServer: .constant(nil)
+    )
 }

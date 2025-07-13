@@ -10,9 +10,12 @@ import SwiftData
 
 @main
 struct GameStatusApp: App {
+    @StateObject private var statusManager = ServerStatusManager()
+
     var body: some Scene {
         WindowGroup {
             ServerListView()
+                .environmentObject(statusManager)
                 .modelContainer(for: GameServer.self)
         }
     }

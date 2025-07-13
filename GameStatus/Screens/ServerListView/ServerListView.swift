@@ -5,32 +5,48 @@
 //  Created by Tom on 10/05/2025.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
-var isPreview: Bool = (ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1")
+var isPreview: Bool =
+    (ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1")
 
 struct ServerListView: View {
     @Query private var gameServers: [GameServer]
+
+    @EnvironmentObject var statusManager: ServerStatusManager
     @Environment(\.modelContext) private var context
     @StateObject private var viewModel: ServerListViewModel = .init()
 
     var body: some View {
         NavigationView {
             ZStack {
-                if (gameServers.isEmpty) {
-                    EmptyState(title: "No servers added\n Click the plus button to add one", imageName: "serverLogoUnique")
+                if gameServers.isEmpty {
+                    EmptyState(
+                        title:
+                            "No servers added\n Click the plus button to add one",
+                        imageName: "serverLogoUnique"
+                    )
                 } else {
-                        Color(.background)
-                            .edgesIgnoringSafeArea(.all)
-                        List(gameServers, id: \.id) { server in
-                            NavigationLink {
-                                ServerDetailsView(server: server)
-                            } label: {
-                                ServerListCell(server: server, selectedServer: $viewModel.selectedServer)
-                            }
-                            .listRowBackground(Color.clear)
+                    Color(.background)
+                        .edgesIgnoringSafeArea(.all)
+                    List(gameServers, id: \.id) { server in
+                        NavigationLink {
+                            ServerDetailsView(server: server, response: statusManager.getResponse(for: server))
+                        } label: {
+                            ServerListCell(
+                                server: server,
+                                response: statusManager.getResponse(
+                                    for: server
+                                ),
+                                selectedServer: $viewModel.selectedServer
+                            )
                         }
+                        .listRowBackground(Color.clear)
+                        .task {
+                            await statusManager.fetchStatus(for: server)
+                        }
+                    }
                 }
             }
             .scrollContentBackground(.hidden)
@@ -38,9 +54,15 @@ struct ServerListView: View {
             .navigationTitle("Servers")
             .overlay(alignment: .bottomTrailing) {
                 HStack {
-                    if (isPreview) {
+                    if isPreview {
                         Button {
-                            let newServer = GameServer(name: "Test", address: "192.168.1.1", port: 80, type: .minecraft, image: nil)
+                            let newServer = GameServer(
+                                name: "Test",
+                                address: "mc.hypixel.net",
+                                port: 25565,
+                                type: .minecraft,
+                                image: nil
+                            )
                             context.insert(newServer)
                         } label: {
                             Image(systemName: "hammer")
@@ -68,7 +90,10 @@ struct ServerListView: View {
                 }
             }
         }.sheet(isPresented: $viewModel.showAddServerModal) {
-            ServerFormView(server: viewModel.selectedServer, isShowing: $viewModel.showAddServerModal).presentationBackground(Color.background)
+            ServerFormView(
+                server: viewModel.selectedServer,
+                isShowing: $viewModel.showAddServerModal
+            ).presentationBackground(Color.background)
         }
     }
 }
@@ -76,4 +101,5 @@ struct ServerListView: View {
 #Preview {
     ServerListView()
         .modelContainer(for: GameServer.self, inMemory: true)
+        .environmentObject(ServerStatusManager())
 }

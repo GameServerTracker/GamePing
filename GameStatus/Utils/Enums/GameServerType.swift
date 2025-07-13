@@ -23,6 +23,14 @@ let gameServerTypesDisplayName: [String: String] = [
     GameServerType.unknown.rawValue: "Unknown",
 ];
 
+let gameServerTypesIconName: [String: String] = [
+    GameServerType.minecraft.rawValue: "minecraft_icon",
+    GameServerType.minecraftBedrock.rawValue: "minecraft_icon",
+    GameServerType.source.rawValue: "source_icon",
+    GameServerType.fivem.rawValue: "fivem_icon",
+    GameServerType.unknown.rawValue: "questionmark.circle.fill",
+];
+
 let gameServerTypesPort: [String: Int] = [
     GameServerType.minecraft.rawValue: 25565,
     GameServerType.minecraftBedrock.rawValue: 19132,
