@@ -27,24 +27,22 @@ class GameServer {
     }
 }
 
-struct GameServerResponse: Decodable {
-    var address: String
-    var port: Int
-    var online: Bool
-    var players: ServerPlayers?
-    var favicon: String?
-    var ping: Int?
+struct ServerStatus {
+    let online: Bool
+    let playersOnline: Int?
+    let playersMax: Int?
+    let players: [String]?
+    let name: String?
+    let game: String?
+    let motd: String?
+    let map: String?
+    let version: String?
+    let ping: Int?
+    let favicon: String?
+    let os: String?
+    let keywords: [String]?
     
-    // Source
-    var OS: String?
-    var map: String?
-
-    struct ServerPlayers: Decodable {
-        var online: Int
-        var max: Int
-        var sample: [String]?
-    }
-    
+    let rawResponse: GameServerResponse
 }
 
 struct MockData {
@@ -58,7 +56,7 @@ struct MockData {
         ),
         .init(name: "WynnCraft", address: "play.wynncraft.net", port: 27015, type: .minecraft, image: nil),
         .init(name: "HephoCraft", address: "play.wynncraft.net", port: 27015, type: .minecraft, image: nil),
-        .init(name: "Cité Sous Contrôle", address: "play.wynncraft.net", port: 27015, type: .minecraftBedrock, image: nil),
+        .init(name: "Cité Sous Contrôle", address: "play.wynncraft.net", port: 27015, type: .bedrock, image: nil),
         .init(name: "BabtouRP", address: "play.wynncraft.net", port: 27015, type: .source, image: nil),
         .init(name: "TrustRP", address: "play.wynncraft.net", port: 27015, type: .source, image: nil),
         .init(name: "Nouvelle France RP", address: "play.wynncraft.net", port: 27015, type: .minecraft, image: nil),

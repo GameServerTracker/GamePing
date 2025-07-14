@@ -10,15 +10,15 @@ import Foundation
 @MainActor
 
 class ServerStatusManager: ObservableObject {
-    @Published var responses: [UUID: GameServerResponse] = [:];
+    @Published var responses: [UUID: ServerStatus] = [:];
     
-    func getResponse(for server: GameServer) -> GameServerResponse? {
+    func getResponse(for server: GameServer) -> ServerStatus? {
         responses[server.id]
     }
     
     func fetchStatus(for server: GameServer) async {
         do {
-            let response = try await NetworkManager.fetchServerData(address: server.address, port: server.port, type: .minecraft)
+            let response = try await NetworkManager.fetchServerData(address: server.address, port: server.port, type: GameServerType(rawValue: server.type)!)
             responses[server.id] = response
         } catch {
             print("[\(server.name)] Erreur fetch status: \(error)")

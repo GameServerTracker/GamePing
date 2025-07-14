@@ -50,7 +50,7 @@ struct ServerFormView: View {
                         .submitLabel(.continue)
                     Picker("Type", selection: $viewModel.serverType) {
                         Text("Minecraft Java Edition").tag(GameServerType.minecraft)
-                        Text("Minecraft Bedrock Edition").tag(GameServerType.minecraftBedrock)
+                        Text("Minecraft Bedrock Edition").tag(GameServerType.bedrock)
                         Text("Source (CS,TF2,GMod,...)").tag(GameServerType.source)
                         Text("FiveM / RedM").tag(GameServerType.fivem)
                     }

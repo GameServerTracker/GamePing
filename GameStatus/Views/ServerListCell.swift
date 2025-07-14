@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ServerListCell: View {
     let server: GameServer
-    let response: GameServerResponse?
+    let response: ServerStatus?
 
     @Binding var selectedServer: GameServer?
 
@@ -47,18 +47,18 @@ struct ServerListCell: View {
                     if response!.online {
                         HStack(spacing: 4) {
                             Image(
-                                systemName: (response!.players!.online > 0
+                                systemName: (response!.playersOnline! > 0
                                     ? "person.fill" : "person.slash.fill")
                             )
                             .foregroundStyle(
-                                (response!.players!.online > 0
+                                (response!.playersOnline! > 0
                                     ? .statusOnline : .gray)
                             )
                             .symbolRenderingMode(.hierarchical)
-                            Text("\(response!.players?.online ?? 0)")
+                            Text("\(response!.playersOnline ?? 0)")
                                 .font(.callout)
                                 .foregroundStyle(
-                                    (response!.players!.online > 0
+                                    (response!.playersOnline! > 0
                                         ? .statusOnline : .gray)
                                 )
                                 .fontWeight(.medium)

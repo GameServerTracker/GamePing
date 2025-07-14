@@ -10,7 +10,7 @@ import SwiftData
 
 struct ServerDetailsView: View {
     let server: GameServer
-    let response: GameServerResponse?
+    let response: ServerStatus?
     
     @Query private var gameServers: [GameServer]
     @Environment(\.modelContext) private var context;
@@ -56,7 +56,7 @@ struct ServerDetailsView: View {
                                     )
                                     .clipShape(Capsule())
                                 if (response?.online == true) {
-                                    Label("\(response?.players?.online ?? 0)", systemImage: "person.fill")
+                                    Label("\(response?.playersOnline ?? 0)", systemImage: "person.fill")
                                         .font(.caption)
                                         .fontWeight(.bold)
                                         .padding(8)
@@ -83,17 +83,25 @@ struct ServerDetailsView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack (alignment: .top) {
                     ImageDetailsView(title: "TYPE", image: Image(gameServerTypesIconName[server.type] ?? "questionmark.circle.fill"), subtitle: gameServerTypesDisplayName[server.type] ?? "Unknown")
-                    Divider().frame(height: 55)
-                    TextDetailsView(title: "MAX PLAYERS", content: "\(response?.players?.online ?? 0)", subtitle: nil)
-                    Divider().frame(height: 55)
-                    TextDetailsView(title: "VERSION", content: "2025.03.26", subtitle: nil)
+                    if (response?.playersMax != nil) {
+                        Divider().frame(height: 55)
+                        TextDetailsView(title: "MAX PLAYERS", content: "\(response?.playersMax ?? 0)", subtitle: nil)
+                    }
+                    if (response?.version != nil) {
+                        Divider().frame(height: 55)
+                        TextDetailsView(title: "VERSION", content: (response?.version)!, subtitle: nil)
+                    }
                     if (response?.map != nil) {
                         Divider().frame(height: 55)
-                        TextDetailsView(title: "MAP", content: "rp_rockford_v2b", subtitle: nil)
+                        TextDetailsView(title: "MAP", content: (response?.map)!, subtitle: nil)
                     }
-                    if (response?.OS != nil) {
+                    if (response?.game != nil) {
                         Divider().frame(height: 55)
-                        ImageDetailsView(title: "OS", image: Image("linux_icon"), subtitle: "Linux")
+                        TextDetailsView(title: "GAME", content: (response?.game)!, subtitle: nil)
+                    }
+                    if (response?.os != nil) {
+                        Divider().frame(height: 55)
+                        ImageDetailsView(title: "OS", image: Image("linux_icon"), subtitle: (response?.os)!)
                     }
                 }.frame(height: 90)
                     .overlay(Divider(), alignment: .top)
