@@ -5,16 +5,16 @@
 //  Created by Tom on 08/06/2025.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ServerDetailsView: View {
     let server: GameServer
     let response: ServerStatus?
-    
+
     @Query private var gameServers: [GameServer]
-    @Environment(\.modelContext) private var context;
-    @Environment(\.dismiss) private var dismiss;
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
 
     @State private var showingConfirmationDelete: Bool = false
     @State private var showEditServerModal: Bool = false
@@ -27,9 +27,10 @@ struct ServerDetailsView: View {
                         ServerIconImage(base64Image: response?.favicon)
                             .frame(width: 102, height: 102)
                     } else {
-                        ServerIconDefault(iconImage: Image("serverLogo"),
-                                          gradientColors: [.brandPrimary],
-                                          iconSize: 52
+                        ServerIconDefault(
+                            iconImage: Image("serverLogo"),
+                            gradientColors: [.brandPrimary],
+                            iconSize: 52
                         ).frame(width: 102, height: 102)
                     }
                     VStack(alignment: .leading) {
@@ -41,27 +42,34 @@ struct ServerDetailsView: View {
                             .font(.callout)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
-                        HStack (spacing: 10) {
+                        HStack(spacing: 10) {
                             HStack {
                                 Text(
-                                    response == nil ? "Pinging..." :
-                                    (response!.online ? "Online" : "Offline")
+                                    response == nil
+                                        ? "Pinging..."
+                                        : (response!.online
+                                            ? "Online" : "Offline")
                                 )
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .padding(8)
+                                .background(
+                                    response == nil
+                                        ? .brandPrimary
+                                        : (response!.online
+                                            ? .statusOnline : .statusOffline)
+                                )
+                                .clipShape(Capsule())
+                                if response?.online == true {
+                                    Label(
+                                        "\(response?.playersOnline ?? 0)",
+                                        systemImage: "person.fill"
+                                    )
                                     .font(.caption)
                                     .fontWeight(.bold)
                                     .padding(8)
-                                    .background(
-                                        response == nil ? .brandPrimary :
-                                        (response!.online ? .statusOnline : .statusOffline)
-                                    )
+                                    .background(.statusOnline)
                                     .clipShape(Capsule())
-                                if (response?.online == true) {
-                                    Label("\(response?.playersOnline ?? 0)", systemImage: "person.fill")
-                                        .font(.caption)
-                                        .fontWeight(.bold)
-                                        .padding(8)
-                                        .background(.statusOnline)
-                                        .clipShape(Capsule())
                                     Text("\(response!.ping ?? 0) ms")
                                         .font(.caption)
                                         .fontWeight(.bold)
@@ -70,7 +78,8 @@ struct ServerDetailsView: View {
                                         .clipShape(Capsule())
                                 }
                             }
-                            ShareLink(item: "\(server.name)\n\(server.address)") {
+                            ShareLink(item: "\(server.name)\n\(server.address)")
+                            {
                                 Image(systemName: "square.and.arrow.up")
                                     .font(.system(size: 20))
                                     .foregroundStyle(.brandPrimary)
@@ -81,47 +90,66 @@ struct ServerDetailsView: View {
             }.frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 20)
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack (alignment: .top) {
-                    ImageDetailsView(title: "TYPE", image: Image(gameServerTypesIconName[server.type] ?? "questionmark.circle.fill"), subtitle: gameServerTypesDisplayName[server.type] ?? "Unknown")
-                    if (response?.playersMax != nil) {
+                HStack(alignment: .top) {
+                    ImageDetailsView(
+                        title: "TYPE",
+                        image: Image(
+                            gameServerTypesIconName[server.type]
+                                ?? "questionmark.circle.fill"
+                        ),
+                        subtitle: gameServerTypesDisplayName[server.type]
+                            ?? "Unknown"
+                    )
+                    if response?.playersMax != nil {
                         Divider().frame(height: 55)
-                        TextDetailsView(title: "MAX PLAYERS", content: "\(response?.playersMax ?? 0)", subtitle: nil)
+                        TextDetailsView(
+                            title: "MAX PLAYERS",
+                            content: "\(response?.playersMax ?? 0)",
+                            subtitle: nil
+                        )
                     }
-                    if (response?.version != nil) {
+                    if response?.version != nil {
                         Divider().frame(height: 55)
-                        TextDetailsView(title: "VERSION", content: (response?.version)!, subtitle: nil)
+                        TextDetailsView(
+                            title: "VERSION",
+                            content: (response?.version)!,
+                            subtitle: nil
+                        )
                     }
-                    if (response?.map != nil) {
+                    if response?.map != nil {
                         Divider().frame(height: 55)
-                        TextDetailsView(title: "MAP", content: (response?.map)!, subtitle: nil)
+                        TextDetailsView(
+                            title: "MAP",
+                            content: (response?.map)!,
+                            subtitle: nil
+                        )
                     }
-                    if (response?.game != nil) {
+                    if response?.game != nil {
                         Divider().frame(height: 55)
-                        TextDetailsView(title: "GAME", content: (response?.game)!, subtitle: nil)
+                        TextDetailsView(
+                            title: "GAME",
+                            content: (response?.game)!,
+                            subtitle: nil
+                        )
                     }
-                    if (response?.os != nil) {
+                    if response?.os != nil {
                         Divider().frame(height: 55)
-                        ImageDetailsView(title: "OS", image: Image("linux_icon"), subtitle: (response?.os)!)
+                        ImageDetailsView(
+                            title: "OS",
+                            image: Image(
+                                gameServerOsTypesIconName[(response?.os!)!]
+                                    ?? "questionmark.circle.fill"
+                            ),
+                            subtitle: (response?.os?.firstUppercased)!
+                        )
                     }
                 }.frame(height: 90)
                     .overlay(Divider(), alignment: .top)
                     .padding(.horizontal)
-                
+
             }.overlay(Divider(), alignment: .top)
                 .padding(.top, 10)
-            VStack(alignment: .trailing) {
-                Text("Players")
-                    .font(.title)
-                    .fontWeight(.bold)
-                ScrollView {
-                    VStack(spacing: 10) {
-                        ForEach(0..<20) {
-                            Text("Item \($0)")
-                                .font(.title)
-                        }
-                    }
-                }
-            }.padding(15)
+            PlayersListCard()
             Spacer()
         }.background(Color.background)
             .toolbar {
@@ -132,7 +160,10 @@ struct ServerDetailsView: View {
                         Image(systemName: "trash")
                             .foregroundStyle(Color.statusOffline)
                     }
-                    .confirmationDialog("Are you sure you want to delete this server?", isPresented: $showingConfirmationDelete) {
+                    .confirmationDialog(
+                        "Are you sure you want to delete this server?",
+                        isPresented: $showingConfirmationDelete
+                    ) {
                         Button("Delete", role: .destructive) {
                             do {
                                 context.delete(server)
@@ -156,7 +187,8 @@ struct ServerDetailsView: View {
                 }
             }
             .sheet(isPresented: $showEditServerModal) {
-                ServerFormView(server: server, isShowing: $showEditServerModal).presentationBackground(Color.background)
+                ServerFormView(server: server, isShowing: $showEditServerModal)
+                    .presentationBackground(Color.background)
             }
     }
 }
@@ -165,9 +197,9 @@ struct ImageDetailsView: View {
     let title: String
     let image: Image
     let subtitle: String?
-    
+
     var body: some View {
-        VStack (alignment: .center) {
+        VStack(alignment: .center) {
             Text(title.uppercased())
                 .foregroundStyle(.secondary)
                 .font(.caption)
@@ -189,14 +221,14 @@ struct TextDetailsView: View {
     let title: String
     let content: String
     let subtitle: String?
-    
+
     var body: some View {
-        VStack (alignment: .center) {
+        VStack(alignment: .center) {
             Text(title.uppercased())
                 .foregroundStyle(.secondary)
                 .font(.caption)
                 .fontWeight(.bold)
-            VStack() {
+            VStack {
                 Text(content)
                     .foregroundStyle(.secondary)
                     .fontWeight(.bold)
@@ -207,7 +239,7 @@ struct TextDetailsView: View {
                     .foregroundStyle(.secondary)
                     .font(.footnote)
             } else {
-                
+
             }
         }.frame(maxWidth: .infinity)
     }

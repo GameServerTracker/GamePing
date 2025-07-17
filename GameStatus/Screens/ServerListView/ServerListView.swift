@@ -46,6 +46,9 @@ struct ServerListView: View {
                         .task {
                             await statusManager.fetchStatus(for: server)
                         }
+                    }.refreshable {
+                        statusManager.responses.removeAll()
+                        await statusManager.fetchAllStatuses(for: gameServers)
                     }
                 }
             }

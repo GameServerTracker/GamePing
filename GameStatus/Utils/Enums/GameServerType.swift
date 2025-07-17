@@ -31,6 +31,12 @@ let gameServerTypesIconName: [String: String] = [
     GameServerType.unknown.rawValue: "questionmark.circle.fill",
 ];
 
+let gameServerOsTypesIconName: [String: String] = [
+    "windows": "windows_icon",
+    "linux": "linux_icon",
+    "mac": "apple.logo",
+];
+
 let gameServerTypesPort: [String: Int] = [
     GameServerType.minecraft.rawValue: 25565,
     GameServerType.bedrock.rawValue: 19132,
