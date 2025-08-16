@@ -61,9 +61,9 @@ struct ServerListView: View {
                         Button {
                             let newServer = GameServer(
                                 name: "Test",
-                                address: "mc.hypixel.net",
-                                port: 25565,
-                                type: .minecraft,
+                                address: "202.181.188.156",
+                                port: 27016,
+                                type: .source,
                                 image: nil
                             )
                             context.insert(newServer)

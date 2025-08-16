@@ -137,10 +137,10 @@ struct ServerDetailsView: View {
                         ImageDetailsView(
                             title: "OS",
                             image: Image(
-                                gameServerOsTypesIconName[(response?.os!)!]
+                                gameServerOsTypesIconName[response?.os ?? "U"]
                                     ?? "questionmark.circle.fill"
                             ),
-                            subtitle: (response?.os?.firstUppercased)!
+                            subtitle: gameServerOsTypesName[response?.os ?? "U"] ?? "Unknown"
                         )
                     }
                 }.frame(height: 90)
@@ -149,7 +149,7 @@ struct ServerDetailsView: View {
 
             }.overlay(Divider(), alignment: .top)
                 .padding(.top, 10)
-            PlayersListCard()
+            PlayersListCard(players: response?.players ?? [])
             Spacer()
         }.background(Color.background)
             .toolbar {

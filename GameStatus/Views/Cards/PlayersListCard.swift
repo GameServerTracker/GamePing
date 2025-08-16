@@ -14,12 +14,10 @@ struct PlayersListCard: View {
         GridItem(.fixed(160)),
         GridItem(.fixed(160)),
     ]
+    
+    private let playerCardLimit: Int = 9
 
-    private let players: [String] = [
-       "BliTz_37", "Emperreur_Bonobo", "TheFantasio974", "batissdeurr",
-        "Emperreur_Bonobo7", "Emperreur_Bonobo6", "Emperreur_Bonobo5",
-        "Emperreur_Bonobo3", "tom_lafontaineeeeeeee",
-    ]
+    let players: [String]
 
     var body: some View {
         VStack(alignment: .center, spacing: 8) {
@@ -49,17 +47,19 @@ struct PlayersListCard: View {
             } else {
                 ZStack {
                     LazyVGrid(columns: fixedColumn, spacing: 10) {
-                        ForEach(players, id: \.self) { item in
+                        ForEach(players.prefix(9), id: \.self) { item in
                             Text(String(item))
                                 .frame(alignment: .center)
                                 .font(.body)
                                 .fontWeight(.semibold)
                                 .lineLimit(1)
                         }
-                        Text("37 more...")
-                            .frame(alignment: .leading)
-                            .font(.body)
-                            .fontWeight(.semibold)
+                        if players.count > playerCardLimit {
+                            Text("\(players.count - playerCardLimit) more...")
+                                .frame(alignment: .leading)
+                                .font(.body)
+                                .fontWeight(.semibold)
+                        }
                     }
                     Rectangle()
                         .fill(Color.gray.opacity(0.4))
@@ -76,5 +76,9 @@ struct PlayersListCard: View {
 }
 
 #Preview {
-    PlayersListCard()
+    PlayersListCard(players: [
+        "BliTz_37", "Emperreur_Bonobo", "TheFantasio974", "batissdeurr",
+         "Emperreur_Bonobo7", "Emperreur_Bonobo6", "Emperreur_Bonobo5",
+         "Emperreur_Bonobo3", "tom_lafontaine",
+     ])
 }

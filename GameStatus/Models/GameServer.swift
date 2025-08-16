@@ -42,7 +42,7 @@ struct ServerStatus {
     let os: String?
     let keywords: [String]?
     
-    let rawResponse: GameServerResponse
+    let rawResponse: GameServerResponse?
 }
 
 struct MockData {

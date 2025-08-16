@@ -11,12 +11,100 @@ import Foundation
 
 class ServerStatusManager: ObservableObject {
     @Published var responses: [UUID: ServerStatus] = [:];
+    private var clients: [UUID: UDPClient] = [:];
     
     func getResponse(for server: GameServer) -> ServerStatus? {
         responses[server.id]
     }
     
     func fetchStatus(for server: GameServer) async {
+        switch server.type {
+        case "source":
+            await fetchSourceStatus(for: server)
+        default:
+            await fetchByApi(for: server)
+        }
+    }
+    
+    private func fetchSourceStatus(for server: GameServer) async {
+        let client = UDPClient(
+            host: server.address,
+            port: UInt16(server.port),
+            messageType: .A2S_INFO
+        )
+        self.clients[server.id] = client
+
+        var info: SourceA2SInfo?
+        var players: SourceA2SPlayer?
+        var gotA2sInfo: Bool = false
+        
+        func sendWithTimeout(_ type: QueryRequestType, timeout: TimeInterval, completion: @escaping () -> Void) {
+            var responded: Bool = false
+
+            client.setMessageType(type)
+            client.onResponse = { response in
+                switch (type, response) {
+                case (.A2S_INFO, .info),
+                     (.A2S_PLAYER, .player),
+                     (.A2S_RULES, .rules):
+                    responded = true
+                default:
+                    return
+                }
+
+                if type == .A2S_INFO { gotA2sInfo = true }
+
+                switch response {
+                case .info(let i): info = i
+                case .player(let p): players = p
+                default: break
+                }
+                completion()
+            }
+            client.clear()
+            client.send()
+
+            DispatchQueue.global().asyncAfter(deadline: .now() + timeout) {
+                if !responded {
+                    completion()
+                }
+            }
+        }
+
+        client.onReady = {
+            sendWithTimeout(.A2S_INFO, timeout: 3) {
+                if !gotA2sInfo {
+                    DispatchQueue.main.async {
+                        self.getSourceResponse(info: nil, player: nil, serverId: server.id)
+                    }
+                    client.stop()
+                    return
+                }
+                sendWithTimeout(.A2S_PLAYER, timeout: 3) {
+                    self.getSourceResponse(info: info, player: players, serverId: server.id)
+                    print("Finish fetch")
+                    client.stop()
+                }
+            }
+        }
+        client.start()
+    }
+    
+    private func getSourceResponse(info: SourceA2SInfo?, player: SourceA2SPlayer?, serverId: UUID) {
+        print(info ?? "No info")
+        print(player ?? "No players")
+        
+        DispatchQueue.main.async {
+            if let info = info {
+                let players = player?.players.map { $0.name } ?? []
+                self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: players, name: info.name, game: info.game, motd: nil, map: info.map, version: info.version, ping: nil, favicon: nil, os: String(info.os), keywords: info.keywords, rawResponse: nil)
+            } else {
+                self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
+            }
+        }
+    }
+    
+    private func fetchByApi(for server: GameServer) async {
         do {
             let response = try await NetworkManager.fetchServerData(address: server.address, port: server.port, type: GameServerType(rawValue: server.type)!)
             responses[server.id] = response

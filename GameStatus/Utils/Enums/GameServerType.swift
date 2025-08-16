@@ -32,9 +32,15 @@ let gameServerTypesIconName: [String: String] = [
 ];
 
 let gameServerOsTypesIconName: [String: String] = [
-    "windows": "windows_icon",
-    "linux": "linux_icon",
-    "mac": "apple.logo",
+    "w": "windows_icon",
+    "l": "linux_icon",
+    "m": "apple.logo",
+];
+
+let gameServerOsTypesName: [String: String] = [
+    "w": "Windows",
+    "l": "Linux",
+    "m": "macOS",
 ];
 
 let gameServerTypesPort: [String: Int] = [
