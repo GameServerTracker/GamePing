@@ -89,66 +89,13 @@ struct ServerDetailsView: View {
                 }
             }.frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 20)
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top) {
-                    ImageDetailsView(
-                        title: "TYPE",
-                        image: Image(
-                            gameServerTypesIconName[server.type]
-                                ?? "questionmark.circle.fill"
-                        ),
-                        subtitle: gameServerTypesDisplayName[server.type]
-                            ?? "Unknown"
-                    )
-                    if response?.playersMax != nil {
-                        Divider().frame(height: 55)
-                        TextDetailsView(
-                            title: "MAX PLAYERS",
-                            content: "\(response?.playersMax ?? 0)",
-                            subtitle: nil
-                        )
-                    }
-                    if response?.version != nil {
-                        Divider().frame(height: 55)
-                        TextDetailsView(
-                            title: "VERSION",
-                            content: (response?.version)!,
-                            subtitle: nil
-                        )
-                    }
-                    if response?.map != nil {
-                        Divider().frame(height: 55)
-                        TextDetailsView(
-                            title: "MAP",
-                            content: (response?.map)!,
-                            subtitle: nil
-                        )
-                    }
-                    if response?.game != nil {
-                        Divider().frame(height: 55)
-                        TextDetailsView(
-                            title: "GAME",
-                            content: (response?.game)!,
-                            subtitle: nil
-                        )
-                    }
-                    if response?.os != nil {
-                        Divider().frame(height: 55)
-                        ImageDetailsView(
-                            title: "OS",
-                            image: Image(
-                                gameServerOsTypesIconName[response?.os ?? "U"]
-                                    ?? "questionmark.circle.fill"
-                            ),
-                            subtitle: gameServerOsTypesName[response?.os ?? "U"] ?? "Unknown"
-                        )
-                    }
-                }.frame(height: 90)
-                    .overlay(Divider(), alignment: .top)
-                    .padding(.horizontal)
-
-            }.overlay(Divider(), alignment: .top)
-                .padding(.top, 10)
+            ServerDetailsScrollView(server: server, response: response)
+            if response?.name != nil {
+                Text(response?.name ?? "N/A")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
             if let players = response?.players, !players.isEmpty {
                 NavigationLink {
                     PlayersFullView(players: players)
@@ -199,6 +146,74 @@ struct ServerDetailsView: View {
                 ServerFormView(server: server, isShowing: $showEditServerModal)
                     .presentationBackground(Color.background)
             }
+    }
+}
+
+struct ServerDetailsScrollView: View {
+    let server: GameServer
+    let response: ServerStatus?
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(alignment: .top) {
+                ImageDetailsView(
+                    title: "TYPE",
+                    image: Image(
+                        gameServerTypesIconName[server.type]
+                            ?? "questionmark.circle.fill"
+                    ),
+                    subtitle: gameServerTypesDisplayName[server.type]
+                        ?? "Unknown"
+                )
+                if response?.playersMax != nil {
+                    Divider().frame(height: 55)
+                    TextDetailsView(
+                        title: "MAX PLAYERS",
+                        content: "\(response?.playersMax ?? 0)",
+                        subtitle: nil
+                    )
+                }
+                if response?.version != nil {
+                    Divider().frame(height: 55)
+                    TextDetailsView(
+                        title: "VERSION",
+                        content: (response?.version)!,
+                        subtitle: nil
+                    )
+                }
+                if response?.map != nil {
+                    Divider().frame(height: 55)
+                    TextDetailsView(
+                        title: "MAP",
+                        content: (response?.map)!,
+                        subtitle: nil
+                    )
+                }
+                if response?.game != nil {
+                    Divider().frame(height: 55)
+                    TextDetailsView(
+                        title: "GAME",
+                        content: (response?.game)!,
+                        subtitle: nil
+                    )
+                }
+                if response?.os != nil {
+                    Divider().frame(height: 55)
+                    ImageDetailsView(
+                        title: "OS",
+                        image: Image(
+                            gameServerOsTypesIconName[response?.os ?? "U"]
+                                ?? "questionmark.circle.fill"
+                        ),
+                        subtitle: gameServerOsTypesName[response?.os ?? "U"] ?? "Unknown"
+                    )
+                }
+            }.frame(height: 90)
+                .overlay(Divider(), alignment: .top)
+                .padding(.horizontal)
+
+        }
+        .overlay(Divider(), alignment: .top)
+        .padding(.top, 10)
     }
 }
 

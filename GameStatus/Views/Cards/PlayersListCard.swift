@@ -22,7 +22,7 @@ struct PlayersListCard: View {
     var body: some View {
         VStack(alignment: .center, spacing: 8) {
             HStack {
-                Text("Players")
+                Label("Players", systemImage: "person.3.fill")
                     .font(.headline)
                 Spacer()
                 if !players.isEmpty {
@@ -41,7 +41,7 @@ struct PlayersListCard: View {
                     .imageScale(.large)
                     .frame(width: 52, height: 52)
                     .foregroundColor(.blue)
-                Text("No Players availaible")
+                Text("No Players available")
                     .font(.title3)
                     .fontWeight(.semibold)
             } else {
