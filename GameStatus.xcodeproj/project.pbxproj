@@ -10,9 +10,22 @@
 		581914312DCFF0FF00F48DFD /* GameStatus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GameStatus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		58B4B3E12E3E70A900214CE8 /* Exceptions for "GameStatus" folder in "GameStatus" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 581914302DCFF0FF00F48DFD /* GameStatus */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		581914332DCFF0FF00F48DFD /* GameStatus */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				58B4B3E12E3E70A900214CE8 /* Exceptions for "GameStatus" folder in "GameStatus" target */,
+			);
 			path = GameStatus;
 			sourceTree = "<group>";
 		};
@@ -256,6 +269,7 @@
 				DEVELOPMENT_TEAM = 7G7R592PEG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GameStatus/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GameStatus;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -284,6 +298,7 @@
 				DEVELOPMENT_TEAM = 7G7R592PEG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GameStatus/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GameStatus;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
