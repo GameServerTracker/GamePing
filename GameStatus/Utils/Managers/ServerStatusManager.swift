@@ -21,9 +21,59 @@ class ServerStatusManager: ObservableObject {
         switch server.type {
         case "source":
             await fetchSourceStatus(for: server)
+            break
+        case "bedrock":
+            await fetchBedrockStatus(for: server)
+            break
         default:
             await fetchByApi(for: server)
         }
+    }
+
+    private func fetchBedrockStatus(for server: GameServer) async {
+        let client = UDPClient(
+            host: server.address,
+            port: UInt16(server.port),
+            messageType: .MC_UNCONNECTED_PING
+        )
+        self.clients[server.id] = client
+        
+        var info: MinecraftBedrockUnconnectedPong?
+        var ping: UInt64? = nil
+        
+        func sendWithTimeout(_ type: QueryRequestType, timeout: TimeInterval, completion: @escaping () -> Void) {
+            var responded: Bool = false
+            
+            client.setMessageType(type)
+            client.onResponse = { response in
+                switch (type, response) {
+                case (.MC_UNCONNECTED_PING, .mcUnconnectedPong):
+                    responded = true
+                    ping = client.ping
+                default : break
+                }
+                switch response {
+                case .mcUnconnectedPong(let i): info = i
+                default: break
+                }
+                completion()
+            }
+            client.clear()
+            client.send()
+
+            DispatchQueue.global().asyncAfter(deadline: .now() + timeout) {
+                if !responded {
+                    completion()
+                }
+            }
+        }
+        client.onReady = {
+            sendWithTimeout(.MC_UNCONNECTED_PING, timeout: 3) {
+                self.getBedrockResponse(info: info, ping: ping, serverId: server.id)
+                client.stop()
+            }
+        }
+        client.start()
     }
     
     private func fetchSourceStatus(for server: GameServer) async {
@@ -104,6 +154,17 @@ class ServerStatusManager: ObservableObject {
                 let serverPing = (ping != nil) ? Int(ping!) : nil
                 
                 self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: players, name: info.name, game: info.game, motd: nil, map: info.map, version: info.version, ping: serverPing, favicon: nil, os: String(info.os), keywords: info.keywords, rawResponse: nil)
+            } else {
+                self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
+            }
+        }
+    }
+    
+    private func getBedrockResponse(info: MinecraftBedrockUnconnectedPong?, ping: UInt64?, serverId: UUID) {
+        DispatchQueue.main.async {
+            if let info = info {
+                let serverPing = (ping != nil) ? Int(ping!) : nil
+                self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: nil, name: nil, game: info.gamemode, motd: info.motd, map: nil, version: info.version.name, ping: serverPing, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
             } else {
                 self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
             }

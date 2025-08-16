@@ -155,7 +155,8 @@ final class UDPClient: @unchecked Sendable {
         case .challenge:
             printLog("Challenge received...")
         case .mcUnconnectedPong(let info):
-            print("MC Data: \(info)")
+            printLog("MC Data: \(info)")
+            DispatchQueue.main.async { self.onResponse?(result!) }
             break
         default:
             printLog("Nothings received...")
