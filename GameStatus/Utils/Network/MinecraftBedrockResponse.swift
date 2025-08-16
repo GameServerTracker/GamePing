@@ -42,12 +42,12 @@ struct MinecraftBedrockUnconnectedPong {
 func parseMinecraftBedrockUnconnectedPong(_ data: Data) -> MinecraftBedrockUnconnectedPong {
     var payload: Data = data
 
-    let _: UInt64 = payload.getUInt64LittleEndian() // Time
-    let serverGuid: UInt64 = payload.getUInt64BigEndian()
+    let _: UInt64 = payload.getUInt64LittleEndian()! // Time
+    let serverGuid: UInt64 = payload.getUInt64BigEndian()!
     payload.removeFirst(16) // Remove Magic
-    let _: UInt16 = payload.getUInt16() // Str length
+    let _: UInt16 = payload.getUInt16()! // Str length
     payload.append(0x00)
-    let content: String = payload.getString()
+    let content: String = payload.getString()!
     
     // e.g. MCPE;PocketMine-MP Server;819;;62;300;1058229627473266407;PocketMine-MP;Survival;0000;0000
     let contentArray: [String] = content.components(separatedBy: ";")

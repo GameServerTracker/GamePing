@@ -34,6 +34,7 @@ final class UDPClient: @unchecked Sendable {
     private let port: UInt16
     
     public var messageType: QueryRequestType
+    public var ping: UInt64?
     public var onResponse: ((QueryResponseType) -> Void)?
     
     init(
@@ -130,13 +131,12 @@ final class UDPClient: @unchecked Sendable {
                 self.printLog("Retrying with challenge...")
                 self.send(challenge: challengeData)
             }
-            //return
         }
         
         if let sent = self.sentTimestamp {
             let now = UInt64(Date().timeIntervalSince1970 * 1000)
-            let rtt = now - sent
-            printLog("Ping RTT: \(rtt) ms")
+            self.ping = now - sent
+            printLog("Ping RTT: \(self.ping!) ms")
         }
 
         switch result {
@@ -228,11 +228,26 @@ final class UDPClient: @unchecked Sendable {
         let header: UInt8 = payload.removeFirst()
         switch header {
         case QueryResponseHeader.info.rawValue:
-            return (.info(parseSourceA2SInfo(payload)), false)
+            if let info: SourceA2SInfo = parseSourceA2SInfo(payload) {
+                return (.info(info), false)
+            } else {
+                return (nil, false)
+            }
+            //return (.info(parseSourceA2SInfo(payload)), false)
         case QueryResponseHeader.player.rawValue:
-            return (.player(parseSourceA2SPlayers(payload)), false)
+            if let player: SourceA2SPlayer = parseSourceA2SPlayers(payload) {
+                return (.player(player), false)
+            } else {
+                return (nil, false)
+            }
+            //return (.player(parseSourceA2SPlayers(payload)), false)
         case QueryResponseHeader.rules.rawValue:
-            return (.rules(parseSourceA2SRules(payload)), false)
+            if let rule: SourceA2SRules = parseSourceA2SRules(payload) {
+                return (.rules(rule), false)
+            } else {
+                return (nil, false)
+            }
+            //return (.rules(parseSourceA2SRules(payload)), false)
         case QueryResponseHeader.challenge.rawValue:
             printLog(
                 "Need to resend query with the following challenge value: \(payload.hexDescription)"
@@ -257,26 +272,26 @@ final class UDPClient: @unchecked Sendable {
             printLog("\(#function): Missing packet ID")
             return nil
         }
-        let packetId: UInt32 = payload.getUInt32LittleEndian()
+        let packetId: UInt32 = payload.getUInt32LittleEndian()!
 
         // Total & index
         guard payload.count >= 1 else {
             printLog("\(#function): Missing Total")
             return nil
         }
-        let total: UInt8 = payload.getUInt8()
+        let total: UInt8 = payload.getUInt8()!
         guard payload.count >= 1 else {
             printLog("\(#function): Missing Idx")
             return nil
         }
-        let index: UInt8 = payload.getUInt8()
+        let index: UInt8 = payload.getUInt8()!
 
         // Size of this fragment's body
         guard payload.count >= 2 else {
             printLog("\(#function): Missing packet size")
             return nil
         }
-        let size: UInt16 = payload.getUInt16()
+        let size: UInt16 = payload.getUInt16()!
 
         var expectedTotal = total
         if (total & 0x80) != 0 {

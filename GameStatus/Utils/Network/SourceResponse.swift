@@ -38,11 +38,11 @@ struct SourceA2SInfo {
     let isPublic: Bool
     let vacIsEnabled: Bool
     let version: String
-    
-    // 
+
+    //
     let port: UInt16?
     let steamId: UInt64?
-    
+
     let sourceTvPort: UInt16?
     let sourceTvName: String?
 
@@ -53,7 +53,7 @@ struct SourceA2SInfo {
 struct SourceA2SPlayer {
     let playersOnline: UInt8
     let players: [PlayerInfo]
-    
+
     struct PlayerInfo {
         let index: UInt8
         let name: String
@@ -65,33 +65,39 @@ struct SourceA2SPlayer {
 struct SourceA2SRules {
     let rulesLength: UInt16
     let rules: [Rule]
-    
+
     struct Rule {
         let name: String
         let value: String
     }
 }
 
-func parseSourceA2SInfo(_ data: Data) -> SourceA2SInfo {
+func parseSourceA2SInfo(_ data: Data) -> SourceA2SInfo? {
     var payload: Data = data
 
-    let protocolVersion: UInt8 = payload.getUInt8()
-    let name: String = payload.getString()
-    let map: String = payload.getString()
-    let folder: String = payload.getString()
-    let game: String = payload.getString()
-    let gameId: UInt16 = payload.getUInt16()
-    let playerOnline: UInt8 = payload.getUInt8()
-    let playerMax: UInt8 = payload.getUInt8()
-    let bots: UInt8 = payload.getUInt8()
-    let serverType = payload.getChar()
-    let serverOs = payload.getChar()
-    let isPrivate: Bool = payload.getBoolean()
-    let vacEnabled: Bool = payload.getBoolean()
-    let version: String = payload.getString()
+    guard
+        let protocolVersion: UInt8 = payload.getUInt8(),
+        let name: String = payload.getString(),
+        let map: String = payload.getString(),
+        let folder: String = payload.getString(),
+        let game: String = payload.getString(),
+        let gameId: UInt16 = payload.getUInt16(),
+        let playerOnline: UInt8 = payload.getUInt8(),
+        let playerMax: UInt8 = payload.getUInt8(),
+        let bots: UInt8 = payload.getUInt8(),
+        let serverType = payload.getChar(),
+        let serverOs = payload.getChar(),
+        let isPrivate: Bool = payload.getBoolean(),
+        let vacEnabled: Bool = payload.getBoolean(),
+        let version: String = payload.getString(),
+        let edf: UInt8 = payload.getUInt8()
+    else {
+        print("Invalid or incomplete A2S_INFO")
+        return nil
+    }
 
     // Extra Data Flag (EDF)
-    let edf: UInt8 = payload.getUInt8()
+    //let edf: UInt8 = payload.getUInt8()
 
     var gamePort: UInt16?
     var steamID: UInt64?
@@ -116,7 +122,7 @@ func parseSourceA2SInfo(_ data: Data) -> SourceA2SInfo {
     if (edf & 0x01) != 0 {
         gameID = payload.getUInt64LittleEndian()
     }
-    
+
     return .init(
         protocol: protocolVersion,
         name: name,
@@ -141,33 +147,53 @@ func parseSourceA2SInfo(_ data: Data) -> SourceA2SInfo {
     )
 }
 
-func parseSourceA2SPlayers(_ data: Data) -> SourceA2SPlayer {
+func parseSourceA2SPlayers(_ data: Data) -> SourceA2SPlayer? {
     var payload: Data = data
     var players: [SourceA2SPlayer.PlayerInfo] = []
-    
-    let playersOnline: UInt8 = payload.getUInt8()
-    
+
+    guard let playersOnline = payload.getUInt8() else {
+        print("Invalid player packet")
+        return nil
+    }
+
     while payload.isEmpty == false {
-        let idx: UInt8 = payload.getUInt8()
-        let name: String = payload.getString()
-        let score: UInt32 = payload.getUInt32LittleEndian()
-        let duration: Float = payload.getFloat32()!
-        players.append(.init(index: idx, name: name, score: score, duration: duration))
+        guard
+            let idx: UInt8 = payload.getUInt8(),
+            let name: String = payload.getString(),
+            let score: UInt32 = payload.getUInt32LittleEndian(),
+            let duration: Float = payload.getFloat32()
+        else {
+            print("Invalid player packet")
+            return nil
+        }
+        players.append(
+            .init(index: idx, name: name, score: score, duration: duration)
+        )
         print(" \(idx): \(name) (\(score)/\(duration))")
-        print("current payload: \(payload) count: \(players.count) / \(playersOnline)")
+        print(
+            "current payload: \(payload) count: \(players.count) / \(playersOnline)"
+        )
     }
     return .init(playersOnline: playersOnline, players: players)
 }
 
-func parseSourceA2SRules(_ data: Data) -> SourceA2SRules {
+func parseSourceA2SRules(_ data: Data) -> SourceA2SRules? {
     var payload: Data = data
     var rules: [SourceA2SRules.Rule] = []
-    
-    let rulesLength: UInt16 = payload.getUInt16()
-    
+
+    guard let rulesLength: UInt16 = payload.getUInt16() else {
+        print("Invalid rule packet")
+        return nil
+    }
+
     while payload.isEmpty == false {
-        let name: String = payload.getString()
-        let value: String = payload.getString()
+        guard
+            let name = payload.getString(),
+            let value = payload.getString()
+        else {
+            print("Invalid rule packet")
+            return nil
+        }
         rules.append(.init(name: name, value: value))
     }
     return .init(rulesLength: rulesLength, rules: rules)

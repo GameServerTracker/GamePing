@@ -9,39 +9,44 @@ import Foundation
 
 extension Data {
     var hexDescription: String {
-        return reduce("") {$0 + String(format: "%02x", $1) + " "}
+        return reduce("") { $0 + String(format: "%02x", $1) + " " }
     }
-    
-    mutating func getUInt8() -> UInt8 {
+
+    mutating func getUInt8() -> UInt8? {
+        guard count >= 1 else { return nil }
         return removeFirst()
     }
-    
-    mutating func getString() -> String {
-        var temp: Data = Data()
-        
-        while self.first != 0x00 {
-            temp.append(removeFirst())
-        }
-        removeFirst()
-        return String(data: temp, encoding: .utf8) ?? ""
+
+    mutating func getString() -> String? {
+        guard let idx = firstIndex(of: 0x00) else { return nil }
+        let slice = prefix(upTo: idx)
+
+        removeFirst(slice.count + 1)
+        return String(data: slice, encoding: .utf8) ?? ""
     }
-    
-    mutating func getUInt16() -> UInt16 {
+
+    mutating func getUInt16() -> UInt16? {
+        guard count >= 2 else { return nil }
+
         let lower: UInt16 = UInt16(removeFirst())
         let upper: UInt16 = UInt16(removeFirst()) << 8
         return lower | upper
     }
-    
-    mutating func getUInt32LittleEndian() -> UInt32 {
+
+    mutating func getUInt32LittleEndian() -> UInt32? {
+        guard count >= 4 else { return nil }
+
         let b1: UInt32 = UInt32(removeFirst())
         let b2: UInt32 = UInt32(removeFirst()) << 8
         let b3: UInt32 = UInt32(removeFirst()) << 16
         let b4: UInt32 = UInt32(removeFirst()) << 24
-        
+
         return b1 | b2 | b3 | b4
     }
-    
-    mutating func getUInt32BigEndian() -> UInt32 {
+
+    mutating func getUInt32BigEndian() -> UInt32? {
+        guard count >= 4 else { return nil }
+
         let b1: UInt32 = UInt32(removeFirst()) << 24
         let b2: UInt32 = UInt32(removeFirst()) << 16
         let b3: UInt32 = UInt32(removeFirst()) << 8
@@ -55,38 +60,49 @@ extension Data {
         removeFirst(4)
         return tmp.withUnsafeBytes { rawBuffer in
             guard let baseAddress = rawBuffer.baseAddress else { return nil }
-            let bitPattern = baseAddress.assumingMemoryBound(to: UInt32.self).pointee
+            let bitPattern = baseAddress.assumingMemoryBound(to: UInt32.self)
+                .pointee
             return Float(bitPattern: UInt32(littleEndian: bitPattern))
         }
     }
-    
-    mutating func getUInt64LittleEndian() -> UInt64 {
-        let lower: UInt64 = UInt64(getUInt32LittleEndian())
-        let upper: UInt64 = UInt64(getUInt32LittleEndian()) << 32
+
+    mutating func getUInt64LittleEndian() -> UInt64? {
+        guard count >= 8 else { return nil }
+
+        let lower: UInt64 = UInt64(getUInt32LittleEndian()!)
+        let upper: UInt64 = UInt64(getUInt32LittleEndian()!) << 32
 
         return lower | upper
     }
-    
-    mutating func getUInt64BigEndian() -> UInt64 {
-        let lower: UInt64 = UInt64(getUInt32BigEndian()) << 32
-        let upper: UInt64 = UInt64(getUInt32BigEndian())
+
+    mutating func getUInt64BigEndian() -> UInt64? {
+        guard count >= 8 else { return nil }
+
+        let lower: UInt64 = UInt64(getUInt32BigEndian()!) << 32
+        let upper: UInt64 = UInt64(getUInt32BigEndian()!)
 
         return lower | upper
     }
-    
-    mutating func getChar() -> Character {
-        return Character(UnicodeScalar(getUInt8()))
+
+    mutating func getChar() -> Character? {
+        let value = getUInt8() ?? nil
+
+        guard value != nil else { return nil }
+        return Character(UnicodeScalar(value!))
     }
-    
-    mutating func getBoolean() -> Bool {
-        return getUInt8() == 0x01
+
+    mutating func getBoolean() -> Bool? {
+        let value = getUInt8() ?? nil
+
+        guard value != nil else { return nil }
+        return value == 0x01
     }
-    
+
     // VarInt
-    
+
     mutating func appendVarInt(_ value: Int) {
         var val = value
-        
+
         while val != 0 {
             var temp = UInt8(val & 0x7F)
             val >>= 7
@@ -96,14 +112,14 @@ extension Data {
             append(temp)
         }
     }
-    
+
     mutating func appendStringVarInt(_ value: String) {
         let utf8Data = value.utf8
 
         appendVarInt(utf8Data.count)
         append(contentsOf: utf8Data)
     }
-    
+
     func appendingPacket(with payload: Data) -> Data {
         var result = Data()
 
@@ -125,7 +141,7 @@ extension Data {
         }
         return result
     }
-    
+
     func peekVarInt(from offset: inout Int) -> Int? {
         var result = 0
         var shift = 0
@@ -149,7 +165,7 @@ extension Data {
 
         return nil
     }
-    
+
     func extractJSONFromStatusPacket() -> String? {
         var offset = 0
 
