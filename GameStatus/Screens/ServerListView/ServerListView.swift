@@ -44,7 +44,11 @@ struct ServerListView: View {
                         }
                         .listRowBackground(Color.clear)
                         .task {
-                            await statusManager.fetchStatus(for: server)
+                            if statusManager.getResponse(for: server) != nil {
+                                print("Skip for \(server.name)")
+                            } else {
+                                await statusManager.fetchStatus(for: server)
+                            }
                         }
                     }.refreshable {
                         statusManager.responses.removeAll()

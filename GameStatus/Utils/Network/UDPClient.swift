@@ -233,21 +233,18 @@ final class UDPClient: @unchecked Sendable {
             } else {
                 return (nil, false)
             }
-            //return (.info(parseSourceA2SInfo(payload)), false)
         case QueryResponseHeader.player.rawValue:
             if let player: SourceA2SPlayer = parseSourceA2SPlayers(payload) {
                 return (.player(player), false)
             } else {
                 return (nil, false)
             }
-            //return (.player(parseSourceA2SPlayers(payload)), false)
         case QueryResponseHeader.rules.rawValue:
             if let rule: SourceA2SRules = parseSourceA2SRules(payload) {
                 return (.rules(rule), false)
             } else {
                 return (nil, false)
             }
-            //return (.rules(parseSourceA2SRules(payload)), false)
         case QueryResponseHeader.challenge.rawValue:
             printLog(
                 "Need to resend query with the following challenge value: \(payload.hexDescription)"

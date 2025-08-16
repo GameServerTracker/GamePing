@@ -149,7 +149,16 @@ struct ServerDetailsView: View {
 
             }.overlay(Divider(), alignment: .top)
                 .padding(.top, 10)
-            PlayersListCard(players: response?.players ?? [])
+            if let players = response?.players, !players.isEmpty {
+                NavigationLink {
+                    PlayersFullView(players: players)
+                } label: {
+                    PlayersListCard(players: players)
+                }
+                .buttonStyle(.plain)
+            } else {
+                PlayersListCard(players: response?.players ?? [])
+            }
             Spacer()
         }.background(Color.background)
             .toolbar {
