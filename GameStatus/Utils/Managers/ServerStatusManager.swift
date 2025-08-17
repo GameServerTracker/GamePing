@@ -11,7 +11,7 @@ import Foundation
 
 class ServerStatusManager: ObservableObject {
     @Published var responses: [UUID: ServerStatus] = [:];
-    private var clients: [UUID: UDPClient] = [:];
+    private var clients: [UUID: Sendable] = [:];
     
     func getResponse(for server: GameServer) -> ServerStatus? {
         responses[server.id]
@@ -25,11 +25,55 @@ class ServerStatusManager: ObservableObject {
         case "bedrock":
             await fetchBedrockStatus(for: server)
             break
+        case "minecraft":
+            await fetchMinecraftStatus(for: server)
+            break
         default:
             await fetchByApi(for: server)
         }
     }
 
+    private func fetchMinecraftStatus(for server: GameServer) async {
+        let client = TCPClient(
+            host: server.address,
+            port: UInt16(server.port),
+        )
+        self.clients[server.id] = client
+        
+        var info: String?
+        var ping: UInt64? = nil
+        
+        func sendWithTimeout(_ type: TCPResponseType, timeout: TimeInterval, completion: @escaping () -> Void) {
+            var responded: Bool = false
+
+            client.onResponse = { response in
+                switch (response) {
+                case (.status):
+                    responded = true
+                    ping = client.ping
+                default : break
+                }
+                switch response {
+                case .status(let i): info = i
+                default: break
+                }
+                completion()
+            }
+            DispatchQueue.global().asyncAfter(deadline: .now() + timeout) {
+                if !responded {
+                    completion()
+                }
+            }
+        }
+        client.onReady = {
+            sendWithTimeout(.pong, timeout: 3) {
+                self.getMinecraftResponse(info: info, ping: ping, serverId: server.id)
+                client.stop()
+            }
+        }
+        client.start()
+    }
+    
     private func fetchBedrockStatus(for server: GameServer) async {
         let client = UDPClient(
             host: server.address,
@@ -145,15 +189,34 @@ class ServerStatusManager: ObservableObject {
     }
     
     private func getSourceResponse(info: SourceA2SInfo?, player: SourceA2SPlayer?, ping: UInt64?, serverId: UUID) {
-        print(info ?? "No info")
-        print(player ?? "No players")
-        
         DispatchQueue.main.async {
             if let info = info {
                 let players = player?.players.map { $0.name } ?? []
                 let serverPing = (ping != nil) ? Int(ping!) : nil
                 
                 self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: players, name: info.name, game: info.game, motd: nil, map: info.map, version: info.version, ping: serverPing, favicon: nil, os: String(info.os), keywords: info.keywords, rawResponse: nil)
+            } else {
+                self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
+            }
+        }
+    }
+    
+    private func getMinecraftResponse(info: String?, ping: UInt64?, serverId: UUID) {
+        DispatchQueue.main.async {
+            if let info = info {
+                print(info)
+                do {
+                    let decoder = JSONDecoder()
+                    let response = try decoder.decode(
+                        MinecraftPong.self,
+                        from: info.data(using: .utf8)!
+                    )
+                    let serverPing = (ping != nil) ? Int(ping!) : nil
+                    self.responses[serverId] = .init(online: true, playersOnline: response.players.online, playersMax: response.players.max, players: nil, name: nil, game: nil, motd: nil, map: nil, version: response.version.name, ping: serverPing, favicon: response.favicon, os: nil, keywords: nil, rawResponse: nil)
+                } catch {
+                    print("Failed to decode response: \(error)")
+                    self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
+                }
             } else {
                 self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
             }

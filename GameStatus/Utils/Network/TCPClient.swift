@@ -8,24 +8,24 @@
 import Foundation
 import Network
 
-protocol TCPClient {
-    func start()
-    func stop()
-    func send()
-    func receive()
+enum TCPResponseType {
+    case status(String)
+    case pong
 }
 
-final class TCPClientImpl: @unchecked Sendable {
+final class TCPClient: @unchecked Sendable {
     private let connection: NWConnection
     private let address: String
     private let port: UInt16
     private var receiveBuffer = Data()
     private var bufferSize: Int = 0
-    
     private var sentPingTimestamp: UInt64?
+    private let queue = DispatchQueue(label: "TCPClientQueue")
     
-    var onStatusReceived: ((String) -> Void)?
-    var onPingRTT: ((UInt64) -> Void)?
+    public var ping: UInt64?
+    public var onReady: (() -> Void)?
+    public var onResponse: ((TCPResponseType) -> Void)?
+    public var onPingRTT: ((UInt64) -> Void)?
     
     init(host: String, port: UInt16) {
         self.address = host
@@ -36,131 +36,120 @@ final class TCPClientImpl: @unchecked Sendable {
             using: .tcp
         )
     }
-}
-
-extension TCPClientImpl: TCPClient {
+    
     func start() {
         connection.stateUpdateHandler = { [weak self] state in
+            guard let self = self else { return }
             print("Client state: \(state)")
-            if state == .ready {
-                self?.send()
-                //self?.receive()
+            switch state {
+            case .ready:
+                self.queue.async {
+                    self.onReady?()
+                    self.sendHandshake()
+                    self.receiveNext()
+                }
+            case .failed(let error):
+                print("Connection failed with error: \(error)")
+                self.stop()
+            case .cancelled:
+                print("Connection cancelled")
+            default:
+                break
             }
         }
-        connection.start(queue: .global())
+        connection.start(queue: queue)
         print("Client Started")
     }
-
+    
     func stop() {
         connection.cancel()
         print("Client Stopped")
     }
-
-    func send() {
-        let handshakeData = self._formatHandshake()
-        connection.send(
-            content: handshakeData,
-            completion: .contentProcessed { error in
-                print("GO")
-                self.connection.send(
-                    content: Data([0x01, 0x00]),
-                    completion: .contentProcessed { _ in
-                        print("GO 2")
-                        self.receive()
-                    }
-                )
-            }
-        )
-    }
-
     
-    func receive() {
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) { data, _, isComplete, error in
+    func sendHandshake() {
+        let handshakeData = self._formatHandshake()
+        self.sentPingTimestamp = UInt64(Date().timeIntervalSince1970 * 1000)
+        connection.send(content: handshakeData, completion: .contentProcessed { [weak self] error in
+            guard let self = self else { return }
+            if let error = error {
+                print("Handshake send error: \(error)")
+                return
+            }
+            self.connection.send(content: Data([0x01, 0x00]), completion: .contentProcessed { error2 in
+                if let error2 = error2 {
+                    print("Second send error: \(error2)")
+                    return
+                }
+                //self.receiveNext()
+            })
+        })
+    }
+    
+    func receiveNext() {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) { [weak self] data, _, isComplete, error in
+            guard let self = self else { return }
             if let error = error {
                 print("Receive error: \(error)")
                 return
             }
-
             guard let data = data else {
                 print("No data received.")
                 return
             }
-
-            print("📥 Received \(data.count) bytes")
-            print(data.hexDescription)
-
-            self.receiveBuffer.append(data)
-
-            // Handle JSON packet
-            if self.sentPingTimestamp == nil {
-                if self.bufferSize == 0 {
-                    var offset: Int = 0
-                    let _ = self.receiveBuffer.readVarInt(from: &offset)
-                    let _ = self.receiveBuffer.readVarInt(from: &offset)
-                    let jsonLength = self.receiveBuffer.readVarInt(from: &offset)
-                    self.bufferSize = jsonLength
-                    self.receiveBuffer.removeFirst(offset)
-                    print("Size is \(self.bufferSize) / offset is \(offset)")
-                } else if self.receiveBuffer.count >= self.bufferSize {
-                    let jsonData = self.receiveBuffer.prefix(self.bufferSize)
-                    if let jsonStr = String(data: jsonData, encoding: .utf8) {
-                        print("✅ JSON Response: \n\(jsonStr)")
-                        self.onStatusReceived?(jsonStr)
-                    }
-                    
-                    // Send Ping
-                    let time = UInt64(Date().timeIntervalSince1970 * 1000)
-                    self.sentPingTimestamp = time
-                    var ping = Data()
-                    ping.append(0x01)
-                    ping.append(contentsOf: withUnsafeBytes(of: time.bigEndian, Array.init))
-                    let finalPing = Data().appendingPacket(with: ping)
-                    
-                    self.connection.send(content: finalPing, completion: .contentProcessed { _ in
-                        print("📤 Ping sent with timestamp \(time)")
-                    })
-                    
-                    self.receiveBuffer.removeAll()
-                    self.bufferSize = 0
+            self.queue.async {
+                self.handleReceivedData(data)
+                if self.connection.state == .ready {
+                    self.receiveNext()
                 }
             }
-
-            // Handle Pong
-            if self.receiveBuffer.count == 10 {
-                var offset: Int = 0
-                let _ = self.receiveBuffer.readVarInt(from: &offset) // Packet Length
-                let _ = self.receiveBuffer.readVarInt(from: &offset) // Packet ID
-                self.receiveBuffer.removeFirst(offset)
-                print(self.receiveBuffer.getUInt64BigEndian())
-
-                if let sent = self.sentPingTimestamp {
-                    let now = UInt64(Date().timeIntervalSince1970 * 1000)
-                    let rtt = now - sent
-                    print("⏱️ Ping RTT: \(rtt) ms")
-                    self.onPingRTT?(rtt)
-                }
-
-                self.stop()
-                return
-            }
-
-            self.receive()
         }
     }
-
+    
+    private func handleReceivedData(_ data: Data) {
+        print("📥 Received \(data.count) bytes")
+        print(data.hexDescription)
+        
+        self.receiveBuffer.append(data)
+        
+        if self.bufferSize == 0 {
+            var offset: Int = 0
+            let _ = self.receiveBuffer.readVarInt(from: &offset)
+            let _ = self.receiveBuffer.readVarInt(from: &offset)
+            let jsonLength = self.receiveBuffer.readVarInt(from: &offset)
+            self.bufferSize = jsonLength
+            self.receiveBuffer.removeFirst(offset)
+            print("Size is \(self.bufferSize) / offset is \(offset)")
+            
+            if (self.ping == nil) {
+                if let sent = self.sentPingTimestamp {
+                    let now = UInt64(Date().timeIntervalSince1970 * 1000)
+                    self.ping = now - sent
+                }
+            }
+        } else if self.receiveBuffer.count >= self.bufferSize {
+            let jsonData = self.receiveBuffer.prefix(self.bufferSize)
+            if let jsonStr = String(data: jsonData, encoding: .utf8) {
+                //print("✅ JSON Response: \n\(jsonStr)")
+                DispatchQueue.main.async {
+                    self.onResponse?(.status(jsonStr))
+                }
+            }
+            self.receiveBuffer.removeAll()
+            self.bufferSize = 0
+        }
+    }
+    
     private func _formatHandshake() -> Data {
         let protocolVersion: Int = 772
         let nextState: Int = 1
-
-        var data: Data = Data()
-
-        data.append(0x00)
+        
+        var data: Data = Data([0x00])
+        
         data.appendVarInt(protocolVersion)
         data.appendStringVarInt(self.address)
         data.append(UInt8(port >> 8))
         data.append(UInt8(port & 0xFF))
         data.appendVarInt(nextState)
-
         return Data().appendingPacket(with: data)
     }
 }
