@@ -41,10 +41,6 @@ struct PlayersFullRow: View {
             Text(!player.isEmpty ? player : "Trying to connect...")
                 .font(.headline)
                 .fontWeight(.medium)
-//            Spacer()
-//            Text("5h")
-//                .font(.body)
-//                .foregroundStyle(.secondary)
         }
     }
 }

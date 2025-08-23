@@ -38,10 +38,11 @@ struct ServerDetailsView: View {
                             .font(.title3)
                             .fontWeight(.bold)
                             .lineLimit(2)
-                        Text(server.address)
+                        Text("\(server.address):\(String(server.port))")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
+                            .textSelection(.enabled)
                         HStack(spacing: 10) {
                             HStack {
                                 Text(
@@ -80,7 +81,7 @@ struct ServerDetailsView: View {
                                     }
                                 }
                             }
-                            ShareLink(item: "\(server.name)\n\(server.address)")
+                            ShareLink(item: "\(server.address):\(String(server.port))")
                             {
                                 Image(systemName: "square.and.arrow.up")
                                     .font(.system(size: 20))
@@ -190,7 +191,7 @@ struct ServerDetailsScrollView: View {
                         subtitle: nil
                     )
                 }
-                if response?.map != nil {
+                if response?.map != nil && response?.map != "" {
                     Divider().frame(height: 55)
                     TextDetailsView(
                         title: "MAP",
