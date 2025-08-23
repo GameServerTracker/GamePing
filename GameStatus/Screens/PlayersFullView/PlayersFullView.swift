@@ -16,14 +16,18 @@ struct PlayersFullView: View {
     let players: [String]
     
     var body: some View {
-        List {
-            ForEach(players.map { PlayerRow(name: $0) }) { playerRow in
-                PlayersFullRow(player: playerRow.name)
+        ZStack {
+            Color(.background)
+                .edgesIgnoringSafeArea(.all)
+            List {
+                ForEach(players.map { PlayerRow(name: $0) }) { playerRow in
+                    PlayersFullRow(player: playerRow.name)
+                }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .navigationTitle("Players (\(players.count))")
         }
-        .scrollContentBackground(.hidden)
-        .background(Color.clear)
-        .navigationTitle("Players (\(players.count))")
     }
 }
 
