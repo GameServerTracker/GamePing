@@ -26,6 +26,10 @@ final class ServerFormViewModel: ObservableObject {
         }
     }
     
+    public var isValid: Bool {
+        return !serverName.isEmpty && !serverAddress.isEmpty
+    }
+    
     public func save(context: ModelContext) {
         if (server != nil) {
             server!.name = self.serverName

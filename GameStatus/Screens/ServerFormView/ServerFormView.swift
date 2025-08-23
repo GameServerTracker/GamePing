@@ -32,31 +32,65 @@ struct ServerFormView: View {
     var body: some View {
         NavigationView() {
             Form {
-                Section(header: Text("Server Info")) {
-                    TextField("Hostname - myserver.net", text: $viewModel.serverAddress)
-                        .textInputAutocapitalization(.never)
-                        .disableAutocorrection(true)
-                        .focused($focusedTextField, equals: FormTextField.hostname)
-                        .onSubmit {
-                            if (viewModel.serverName.isEmpty) {
-                                viewModel.serverName = viewModel.serverAddress
+                Section {
+                    HStack() {
+                      Image(systemName: "server.rack")
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                        TextField("Hostname - myserver.net", text: $viewModel.serverAddress)
+                            .textInputAutocapitalization(.never)
+                            .disableAutocorrection(true)
+                            .focused($focusedTextField, equals: FormTextField.hostname)
+                            .onSubmit {
+                                let addressSplit = viewModel.serverAddress.split(separator: ":")
+                                if addressSplit.count > 1 {
+                                    viewModel.serverPort = Int(addressSplit[1])
+                                    viewModel.serverAddress = String(addressSplit[0])
+                                }
+                                if (viewModel.serverName.isEmpty) {
+                                    viewModel.serverName = (addressSplit.count > 1) ? String(addressSplit[0]) :  viewModel.serverAddress
+                                }
+                                focusedTextField = .name
                             }
-                            focusedTextField = .name
-                        }
-                        .submitLabel(.next)
-                    TextField("Server Name - My Server", text: $viewModel.serverName)
-                        .focused($focusedTextField, equals: FormTextField.name)
-                        .onSubmit { focusedTextField = nil }
-                        .submitLabel(.continue)
-                    Picker("Type", selection: $viewModel.serverType) {
-                        Text("Minecraft Java Edition").tag(GameServerType.minecraft)
-                        Text("Minecraft Bedrock Edition").tag(GameServerType.bedrock)
-                        Text("Source (CS,TF2,GMod,...)").tag(GameServerType.source)
-                        Text("FiveM / RedM").tag(GameServerType.fivem)
+                            .submitLabel(.next)
                     }
-                    TextField("Port", value: $viewModel.serverPort, format: .number)
-                        .keyboardType(.numberPad)
+                    HStack {
+                        Image(systemName: "tag.fill")
+                          .resizable()
+                          .frame(width: 20, height: 20)
+                        TextField("Name - My Server", text: $viewModel.serverName)
+                            .focused($focusedTextField, equals: FormTextField.name)
+                            .onSubmit { focusedTextField = nil }
+                            .submitLabel(.continue)
+                    }
+                    HStack {
+                        Image(systemName: "gamecontroller.fill")
+                          .resizable()
+                          .scaledToFit()
+                          .frame(width: 20, height: 20)
+                        Picker("Type", selection: $viewModel.serverType) {
+                            Text("Minecraft Java Edition").tag(GameServerType.minecraft)
+                            Text("Minecraft Bedrock Edition").tag(GameServerType.bedrock)
+                            Text("Source (CS,TF2,GMod,...)").tag(GameServerType.source)
+                            Text("FiveM / RedM").tag(GameServerType.fivem)
+                        }
+                    }
+                    HStack {
+                        Image(systemName: "number")
+                          .resizable()
+                          .frame(width: 20, height: 20)
+                        TextField("Port (Optional)", value: $viewModel.serverPort, format: .number)
+                            .keyboardType(.numberPad)
+                    }
+                } header: {
+                    Text("Server Info")
                 }
+                footer: {
+                    if (viewModel.serverType.rawValue == GameServerType.fivem.rawValue) {
+                        Text("Following iOS constraints, This server type requires to uses an external API to fetch the server status.\ngamerservertracker.io")
+                    }
+                }
+                
             }.navigationTitle(Text(server == nil ? "Add a server" : "Edit server"))
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
@@ -65,7 +99,7 @@ struct ServerFormView: View {
                             isShowing = false
                         } label: {
                             Text("Save")
-                        }
+                        }.disabled(!viewModel.isValid)
                     }
                     ToolbarItem(placement: .cancellationAction) {
                         Button {
