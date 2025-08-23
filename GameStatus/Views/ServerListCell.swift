@@ -64,9 +64,11 @@ struct ServerListCell: View {
                                 .fontWeight(.medium)
                                 .lineLimit(1)
                         }
-                        Text("\(response!.ping ?? 0) ms")
-                            .font(.callout)
-                            .lineLimit(1)
+                        if response!.ping != nil {
+                            Text("\(response!.ping ?? 0) ms")
+                                .font(.callout)
+                                .lineLimit(1)
+                        }
                     } else {
                         Text("Offline")
                             .font(.callout)
