@@ -27,7 +27,7 @@ struct MinecraftPong: Codable {
         init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
             if let str = try? container.decode(String.self) {
-                self.value = DescriptionObject(text: str, extra: nil)
+                self.value = DescriptionObject(text: str, bold: nil, italic: nil, color: nil, obfuscated: nil, extra: nil)
             } else if let obj = try? container.decode(DescriptionObject.self) {
                 self.value = obj
             } else {
@@ -38,6 +38,10 @@ struct MinecraftPong: Codable {
 
     struct DescriptionObject: Codable {
         let text: String?
+        let bold: Bool?
+        let italic: Bool?
+        let color: String?
+        let obfuscated: Bool?
         let extra: [DescriptionObject]?
 
         func toPlainText() -> String {
@@ -51,6 +55,6 @@ struct MinecraftPong: Codable {
 
     let version: MinecraftVersion
     let players: MinecraftPlayers
-    let description: Description
+    //let description: Description
     let favicon: String?
 }

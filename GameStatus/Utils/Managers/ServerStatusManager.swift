@@ -212,7 +212,8 @@ class ServerStatusManager: ObservableObject {
                         from: info.data(using: .utf8)!
                     )
                     let serverPing = (ping != nil) ? Int(ping!) : nil
-                    self.responses[serverId] = .init(online: true, playersOnline: response.players.online, playersMax: response.players.max, players: nil, name: nil, game: nil, motd: nil, map: nil, version: response.version.name, ping: serverPing, favicon: response.favicon, os: nil, keywords: nil, rawResponse: nil)
+                    let players: [String] = response.players.sample?.map { $0.name } ?? []
+                    self.responses[serverId] = .init(online: true, playersOnline: response.players.online, playersMax: response.players.max, players: players, name: nil, game: nil, motd: nil, map: nil, version: response.version.name, ping: serverPing, favicon: response.favicon, os: nil, keywords: nil, rawResponse: nil)
                 } catch {
                     print("Failed to decode response: \(error)")
                     self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
