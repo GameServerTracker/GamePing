@@ -44,9 +44,7 @@ struct ServerListView: View {
                         }
                         .listRowBackground(Color.clear)
                         .task {
-                            if statusManager.getResponse(for: server) != nil {
-                                print("Skip for \(server.name)")
-                            } else {
+                            if statusManager.getResponse(for: server) == nil {
                                 await statusManager.fetchStatus(for: server)
                             }
                         }
