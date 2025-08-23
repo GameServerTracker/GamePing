@@ -81,12 +81,6 @@ struct ServerDetailsView: View {
                                     }
                                 }
                             }
-                            ShareLink(item: "\(server.address):\(String(server.port))")
-                            {
-                                Image(systemName: "square.and.arrow.up")
-                                    .font(.system(size: 20))
-                                    .foregroundStyle(.brandPrimary)
-                            }
                         }
                     }
                 }
@@ -121,36 +115,45 @@ struct ServerDetailsView: View {
         }.background(Color.background)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showingConfirmationDelete = true
+                    Menu {
+                        Button {
+                            UIPasteboard.general.string = "\(server.address):\(String(server.port))"
+                        } label: {
+                            Label("Copy Address", systemImage: "doc.on.clipboard")
+                        }
+
+                        Button {
+                            showEditServerModal = true
+                        } label: {
+                            Label("Edit Server", systemImage: "pencil")
+                        }
+                        
+                        Button {
+                            showingConfirmationDelete = true
+                        } label: {
+                            Label("Delete Server", systemImage: "trash")
+                                .foregroundStyle(Color.statusOffline)
+                        }
                     } label: {
-                        Image(systemName: "trash")
-                            .foregroundStyle(Color.statusOffline)
-                    }
-                    .confirmationDialog(
-                        "Are you sure you want to delete this server?",
-                        isPresented: $showingConfirmationDelete
-                    ) {
-                        Button("Delete", role: .destructive) {
-                            do {
-                                context.delete(server)
-                                try context.save()
-                                dismiss()
-                            } catch {
-                                print("Error during the deletion: \(error)")
-                            }
-                        }
-                        Button("Cancel", role: .cancel) {
-                            showingConfirmationDelete = false
-                        }
+                        Image(systemName: "ellipsis.circle")
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showEditServerModal = true
-                    } label: {
-                        Image(systemName: "slider.vertical.3")
+            }
+            .confirmationDialog(
+                "Are you sure you want to delete this server ?",
+                isPresented: $showingConfirmationDelete
+            ) {
+                Button("Delete", role: .destructive) {
+                    do {
+                        context.delete(server)
+                        try context.save()
+                        dismiss()
+                    } catch {
+                        print("Error during the deletion: \(error)")
                     }
+                }
+                Button("Cancel", role: .cancel) {
+                    showingConfirmationDelete = false
                 }
             }
             .sheet(isPresented: $showEditServerModal) {
@@ -281,6 +284,6 @@ struct TextDetailsView: View {
 }
 
 #Preview {
-    ServerDetailsView(server: MockData.gameServers.last!, response: nil)
+    ServerDetailsView(server: MockData.gameServers.last!, response: .init(online: true, playersOnline: 99999, playersMax: 99999, players: nil, name: "DEBUG", game: "DebugWars", motd: nil, map: "de_dust2", version: "1.12.2", ping: 999, favicon: nil, os: "l", keywords: ["tagAlpha", "tagBeta", "tagDev", "tagTest"], rawResponse: nil))
         .modelContainer(for: GameServer.self, inMemory: true)
 }
