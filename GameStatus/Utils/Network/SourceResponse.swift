@@ -142,7 +142,7 @@ func parseSourceA2SInfo(_ data: Data) -> SourceA2SInfo? {
         steamId: steamID,
         sourceTvPort: sourceTVPort,
         sourceTvName: sourceTVName,
-        keywords: tags?.components(separatedBy: ","),
+        keywords: tags?.components(separatedBy: " "),
         gameIdLong: gameID
     )
 }

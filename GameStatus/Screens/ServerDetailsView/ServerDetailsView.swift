@@ -70,12 +70,14 @@ struct ServerDetailsView: View {
                                     .padding(8)
                                     .background(.statusOnline)
                                     .clipShape(Capsule())
-                                    Text("\(response!.ping ?? 0) ms")
-                                        .font(.caption)
-                                        .fontWeight(.bold)
-                                        .padding(8)
-                                        .background(.statusOnline)
-                                        .clipShape(Capsule())
+                                    if (response!.ping != nil) {
+                                        Text("\(response!.ping ?? 0) ms")
+                                            .font(.caption)
+                                            .fontWeight(.bold)
+                                            .padding(8)
+                                            .background(.statusOnline)
+                                            .clipShape(Capsule())
+                                    }
                                 }
                             }
                             ShareLink(item: "\(server.name)\n\(server.address)")
@@ -105,6 +107,14 @@ struct ServerDetailsView: View {
                 .buttonStyle(.plain)
             } else {
                 PlayersListCard(players: response?.players ?? [])
+            }
+            if ((response?.keywords?.isEmpty) != nil) {
+                NavigationLink {
+                    TagsFullView(tags: (response?.keywords!)!)
+                } label: {
+                    TagsListCard(tags: (response?.keywords!)!)
+                }
+                .buttonStyle(.plain)
             }
             Spacer()
         }.background(Color.background)

@@ -26,12 +26,8 @@ struct PlayersListCard: View {
                     .font(.headline)
                 Spacer()
                 if !players.isEmpty {
-                    Button {
-                        
-                    } label: {
-                        Image(systemName: "chevron.forward")
-                            .foregroundColor(.brandPrimary)
-                    }
+                    Image(systemName: "chevron.forward")
+                        .foregroundColor(.brandPrimary)
                 }
             }
             if players.isEmpty {
