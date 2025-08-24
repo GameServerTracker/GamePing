@@ -28,8 +28,12 @@ class ServerStatusManager: ObservableObject {
         case "minecraft":
             await fetchMinecraftStatus(for: server)
             break
+        case "fivem":
+            await fetchFivemStatus(for: server)
+            break
         default:
-            await fetchByApi(for: server)
+            print("[\(server.name)][\(server.type)] Server type not supported")
+            break
         }
     }
 
@@ -188,15 +192,58 @@ class ServerStatusManager: ObservableObject {
         client.start()
     }
     
+    private func fetchFivemStatus(for server: GameServer) async {
+        let dynamic: FiveMServerResponse? = await NetworkManager.fetchFiveMDynamic(address: server.address, port: server.port)
+        let info: FivemInfoResponse?  = await NetworkManager.fetchFiveMInfo(address: server.address, port: server.port)
+        let players: [FivemPlayer]? = await NetworkManager.fetchFiveMPlayers(address: server.address, port: server.port)
+        
+        if dynamic == nil || dynamic?.online == false {
+            self.responses[server.id] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
+            return;
+        }
+        
+        let playersMax: Int? = {
+            if let max = dynamic?.sv_maxclients {
+                return Int(max)
+            }
+            return nil
+        }()
+        
+        let keywords: [String]? = {
+            if let tags = info?.vars?.tags {
+                return tags.components(separatedBy: ", ")
+            }
+            return nil
+        }()
+        let playersList = players.map { $0.map(\.name) } ?? []
+        let status = ServerStatus(
+            online: true,
+            playersOnline: dynamic?.clients,
+            playersMax: playersMax,
+            players: playersList,
+            name: info?.vars?.projectName,
+            game: dynamic?.gametype,
+            motd: nil,
+            map: dynamic?.mapname,
+            version: info?.server,
+            ping: nil,
+            favicon: info?.icon,
+            os: nil,
+            keywords: keywords,
+        )
+        print(status)
+        self.responses[server.id] = status
+    }
+    
     private func getSourceResponse(info: SourceA2SInfo?, player: SourceA2SPlayer?, ping: UInt64?, serverId: UUID) {
         DispatchQueue.main.async {
             if let info = info {
                 let players = player?.players.map { $0.name } ?? []
                 let serverPing = (ping != nil) ? Int(ping!) : nil
                 
-                self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: players, name: info.name, game: info.game, motd: nil, map: info.map, version: info.version, ping: serverPing, favicon: nil, os: String(info.os), keywords: info.keywords, rawResponse: nil)
+                self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: players, name: info.name, game: info.game, motd: nil, map: info.map, version: info.version, ping: serverPing, favicon: nil, os: String(info.os), keywords: info.keywords)
             } else {
-                self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
+                self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
             }
         }
     }
@@ -213,13 +260,13 @@ class ServerStatusManager: ObservableObject {
                     )
                     let serverPing = (ping != nil) ? Int(ping!) : nil
                     let players: [String] = response.players.sample?.map { $0.name } ?? []
-                    self.responses[serverId] = .init(online: true, playersOnline: response.players.online, playersMax: response.players.max, players: players, name: nil, game: nil, motd: nil, map: nil, version: response.version.name, ping: serverPing, favicon: response.favicon, os: nil, keywords: nil, rawResponse: nil)
+                    self.responses[serverId] = .init(online: true, playersOnline: response.players.online, playersMax: response.players.max, players: players, name: nil, game: nil, motd: nil, map: nil, version: response.version.name, ping: serverPing, favicon: response.favicon, os: nil, keywords: nil)
                 } catch {
                     print("Failed to decode response: \(error)")
-                    self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
+                    self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
                 }
             } else {
-                self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
+                self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
             }
         }
     }
@@ -228,19 +275,10 @@ class ServerStatusManager: ObservableObject {
         DispatchQueue.main.async {
             if let info = info {
                 let serverPing = (ping != nil) ? Int(ping!) : nil
-                self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: nil, name: nil, game: info.gamemode, motd: info.motd, map: nil, version: info.version.name, ping: serverPing, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
+                self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: nil, name: nil, game: info.gamemode, motd: info.motd, map: nil, version: info.version.name, ping: serverPing, favicon: nil, os: nil, keywords: nil)
             } else {
-                self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil, rawResponse: nil)
+                self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
             }
-        }
-    }
-    
-    private func fetchByApi(for server: GameServer) async {
-        do {
-            let response = try await NetworkManager.fetchServerData(address: server.address, port: server.port, type: GameServerType(rawValue: server.type)!)
-            responses[server.id] = response
-        } catch {
-            print("[\(server.name)] Erreur fetch status: \(error)")
         }
     }
     

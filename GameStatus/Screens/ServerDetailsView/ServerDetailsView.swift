@@ -284,6 +284,6 @@ struct TextDetailsView: View {
 }
 
 #Preview {
-    ServerDetailsView(server: MockData.gameServers.last!, response: .init(online: true, playersOnline: 99999, playersMax: 99999, players: nil, name: "DEBUG", game: "DebugWars", motd: nil, map: "de_dust2", version: "1.12.2", ping: 999, favicon: nil, os: "l", keywords: ["tagAlpha", "tagBeta", "tagDev", "tagTest"], rawResponse: nil))
+    ServerDetailsView(server: MockData.gameServers.last!, response: .init(online: true, playersOnline: 99999, playersMax: 99999, players: nil, name: "DEBUG", game: "DebugWars", motd: nil, map: "de_dust2", version: "1.12.2", ping: 999, favicon: nil, os: "l", keywords: ["tagAlpha", "tagBeta", "tagDev", "tagTest"]))
         .modelContainer(for: GameServer.self, inMemory: true)
 }

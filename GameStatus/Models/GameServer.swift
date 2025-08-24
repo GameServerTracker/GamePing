@@ -41,8 +41,6 @@ struct ServerStatus {
     let favicon: String?
     let os: String?
     let keywords: [String]?
-    
-    let rawResponse: GameServerResponse?
 }
 
 struct MockData {
@@ -64,49 +62,4 @@ struct MockData {
         .init(name: "FlashLand RP", address: "play.wynncraft.net", port: 27015, type: .fivem, image: nil),
         .init(name: "LePtitDarkRP", address: "play.wynncraft.net", port: 27015, type: .source, image: nil),
     ]
-    
-//    static let gameServerResponses: [GameServerResponse] = [
-//        .init(
-//            online: false,
-//            isQuerying: true,
-//            player: nil,
-//            ping: nil
-//        ),
-//        .init(
-//            online: false,
-//            isQuerying: false,
-//            player: nil,
-//            ping: nil
-//        ),
-//        .init(
-//            online: true,
-//            isQuerying: false,
-//            player: .init(online: 83, max: 100, sample: []),
-//            ping: 42
-//        ),
-//        .init(
-//            online: true,
-//            isQuerying: false,
-//            player: .init(online: 12, max: 100, sample: ["BliTz_37", "Ertinox45", "Batisseurr", "Tibzee", "Akirabane", "Emperreur_Bonobo", "Alexidre"]),
-//            ping: 42
-//        ),
-//        .init(
-//            online: true,
-//            isQuerying: false,
-//            player: .init(online: 0, max: 10, sample: ["Pepito", "Dynamix76", "Bamiot95"]),
-//            ping: 124
-//        ),
-//        .init(
-//            online: true,
-//            isQuerying: false,
-//            player: .init(online: 24, max: 100, sample: ["BliTz_37", "Ertinox45", "Batisseurr", "Tibzee", "Akirabane", "Emperreur_Bonobo", "Alexidre"]),
-//            ping: 42
-//        ),
-//    ]
-//    
-//    static let sampleGameServerResponse: GameServerResponse = .init(
-//        online: true,
-//        isQuerying: false,
-//        player: .init(online: 12, max: 100, sample: ["BliTz_37", "Ertinox45", "Batisseurr", "Tibzee", "Akirabane", "Emperreur_Bonobo", "Alexidre"]),
-//        ping: 42)
 }

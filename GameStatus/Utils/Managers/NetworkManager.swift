@@ -9,37 +9,67 @@ import Foundation
 
 final class NetworkManager {
     static let baseURL = "https://api.gameservertracker.io"
-    
-    static func fetchServerData(address: String, port: Int, type: GameServerType) async throws -> ServerStatus {
-        var entrypoint: String? = nil
 
-        switch type {
-            case .minecraft:
-                entrypoint = "minecraft"
-                break
-            case .bedrock:
-                entrypoint = "minecraft/bedrock"
-                break
-            case .source:
-                entrypoint = "source"
-                break
-        case .fivem:
-            entrypoint = "fivem"
-            break
-        default:
-            throw GameStatusException.invalidGameServerType("Invalid game server type: \(type)")
-        }
-        
-        let url = URL(string: "\(Self.baseURL)/\(entrypoint!)/\(address):\(port)")!
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
+    static func fetchFiveMInfo(address: String, port: Int) async -> FivemInfoResponse? {
+        let url = URL(string: "\(Self.baseURL)/fivem/info/\(address):\(port)")!
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 2
         
         do {
-            let decoded = try GameServerResponse.from(data: data, type: type)
-            return decoded.unified
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            if let str = String(data: data, encoding: .utf8),
+                str.trimmingCharacters(in: .whitespacesAndNewlines) == "Nope" {
+                 return nil
+             }
+        
+            let decoded = try JSONDecoder().decode(FivemInfoResponse.self, from: data)
+            return decoded
         } catch {
             print("Failed to decode response: \(error)")
-            throw error
+            return nil
+        }
+    }
+    
+    static func fetchFiveMDynamic(address: String, port: Int) async -> FiveMServerResponse? {
+        let url = URL(string: "\(Self.baseURL)/fivem/\(address):\(port)")!
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 2
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            if let str = String(data: data, encoding: .utf8),
+                str.trimmingCharacters(in: .whitespacesAndNewlines) == "Nope" {
+                 return nil
+             }
+        
+            let decoded = try JSONDecoder().decode(FiveMServerResponse.self, from: data)
+            return decoded
+        } catch {
+            print("Failed to decode response: \(error)")
+            return nil
+        }
+    }
+    
+    static func fetchFiveMPlayers(address: String, port: Int) async -> [FivemPlayer]? {
+        let url = URL(string: "\(Self.baseURL)/fivem/players/\(address):\(port)")!
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 2
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            if let str = String(data: data, encoding: .utf8),
+                str.trimmingCharacters(in: .whitespacesAndNewlines) == "Nope" {
+                 return nil
+             }
+        
+            let decoded = try JSONDecoder().decode(FivemPlayersResponse.self, from: data)
+            return decoded.players ?? []
+        } catch {
+            print("Failed to decode response: \(error)")
+            return nil
         }
     }
 }
