@@ -169,10 +169,6 @@ func parseSourceA2SPlayers(_ data: Data) -> SourceA2SPlayer? {
         players.append(
             .init(index: idx, name: name, score: score, duration: duration)
         )
-//        print(" \(idx): \(name) (\(score)/\(duration))")
-//        print(
-//            "current payload: \(payload) count: \(players.count) / \(playersOnline)"
-//        )
     }
     return .init(playersOnline: playersOnline, players: players)
 }

@@ -40,7 +40,7 @@ final class TCPClient: @unchecked Sendable {
     func start() {
         connection.stateUpdateHandler = { [weak self] state in
             guard let self = self else { return }
-            print("Client state: \(state)")
+            printLog("Client state: \(state)")
             switch state {
             case .ready:
                 self.queue.async {
@@ -49,21 +49,21 @@ final class TCPClient: @unchecked Sendable {
                     self.receiveNext()
                 }
             case .failed(let error):
-                print("Connection failed with error: \(error)")
+                printLog("Connection failed with error: \(error)")
                 self.stop()
             case .cancelled:
-                print("Connection cancelled")
+                printLog("Connection cancelled")
             default:
                 break
             }
         }
         connection.start(queue: queue)
-        print("Client Started")
+        printLog("Client Started")
     }
     
     func stop() {
         connection.cancel()
-        print("Client Stopped")
+        printLog("Client Stopped")
     }
     
     func sendHandshake() {
@@ -72,15 +72,14 @@ final class TCPClient: @unchecked Sendable {
         connection.send(content: handshakeData, completion: .contentProcessed { [weak self] error in
             guard let self = self else { return }
             if let error = error {
-                print("Handshake send error: \(error)")
+                self.printLog("Handshake send error: \(error)")
                 return
             }
             self.connection.send(content: Data([0x01, 0x00]), completion: .contentProcessed { error2 in
                 if let error2 = error2 {
-                    print("Second send error: \(error2)")
+                    self.printLog("Second send error: \(error2)")
                     return
                 }
-                //self.receiveNext()
             })
         })
     }
@@ -89,11 +88,11 @@ final class TCPClient: @unchecked Sendable {
         connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) { [weak self] data, _, isComplete, error in
             guard let self = self else { return }
             if let error = error {
-                print("Receive error: \(error)")
+                printLog("Receive error: \(error)")
                 return
             }
             guard let data = data else {
-                print("No data received.")
+                printLog("No data received.")
                 return
             }
             self.queue.async {
@@ -106,8 +105,8 @@ final class TCPClient: @unchecked Sendable {
     }
     
     private func handleReceivedData(_ data: Data) {
-        print("📥 Received \(data.count) bytes")
-        print(data.hexDescription)
+        printLog("Received \(data.count) bytes")
+        printLog(data.hexDescription)
         
         self.receiveBuffer.append(data)
         
@@ -118,7 +117,7 @@ final class TCPClient: @unchecked Sendable {
             let jsonLength = self.receiveBuffer.readVarInt(from: &offset)
             self.bufferSize = jsonLength
             self.receiveBuffer.removeFirst(offset)
-            print("Size is \(self.bufferSize) / offset is \(offset)")
+            printLog("Size is \(self.bufferSize) / offset is \(offset)")
             
             if (self.ping == nil) {
                 if let sent = self.sentPingTimestamp {
@@ -129,7 +128,6 @@ final class TCPClient: @unchecked Sendable {
         } else if self.receiveBuffer.count >= self.bufferSize {
             let jsonData = self.receiveBuffer.prefix(self.bufferSize)
             if let jsonStr = String(data: jsonData, encoding: .utf8) {
-                //print("✅ JSON Response: \n\(jsonStr)")
                 DispatchQueue.main.async {
                     self.onResponse?(.status(jsonStr))
                 }
@@ -151,5 +149,9 @@ final class TCPClient: @unchecked Sendable {
         data.append(UInt8(port & 0xFF))
         data.appendVarInt(nextState)
         return Data().appendingPacket(with: data)
+    }
+    
+    private func printLog(_ message: String) -> Void {
+        print("[\(self.address):\(self.port)] \(message)")
     }
 }
