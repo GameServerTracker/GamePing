@@ -12,7 +12,8 @@ var isPreview: Bool =
     (ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1")
 
 struct ServerListView: View {
-    @Query private var gameServers: [GameServer]
+    @Query(sort: [SortDescriptor(\GameServer.type, order: .forward), SortDescriptor(\GameServer.name, order: .forward)])
+    private var gameServers: [GameServer]
 
     @EnvironmentObject var statusManager: ServerStatusManager
     @Environment(\.modelContext) private var context
@@ -91,7 +92,7 @@ struct ServerListView: View {
                             .background(Color.brandPrimary)
                             .clipShape(Circle())
                             .shadow(radius: 2.5)
-                    }.padding(.horizontal)
+                    }.padding(.vertical).padding(.horizontal)
                 }
             }
         }.sheet(isPresented: $viewModel.showAddServerModal) {

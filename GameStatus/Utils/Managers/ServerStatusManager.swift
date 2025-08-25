@@ -19,16 +19,16 @@ class ServerStatusManager: ObservableObject {
     
     func fetchStatus(for server: GameServer) async {
         switch server.type {
-        case "source":
+        case GameServerType.source.rawValue:
             await fetchSourceStatus(for: server)
             break
-        case "bedrock":
+        case GameServerType.bedrock.rawValue:
             await fetchBedrockStatus(for: server)
             break
-        case "minecraft":
+        case GameServerType.minecraft.rawValue:
             await fetchMinecraftStatus(for: server)
             break
-        case "fivem":
+        case GameServerType.fivem.rawValue:
             await fetchFivemStatus(for: server)
             break
         default:

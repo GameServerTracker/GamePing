@@ -6,8 +6,8 @@
 //
 
 enum GameServerType: String, CaseIterable, Identifiable, Codable {
-    case minecraft = "minecraft"
-    case bedrock = "bedrock"
+    case minecraft = "mc"
+    case bedrock = "mcb"
     case source = "source"
     case fivem = "fivem"
     case unknown = "n/a"
