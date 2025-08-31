@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "GST-iOS-Default-1024x1024@1x.png",
+      "filename" : "AppIconWhite.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,6 @@
           "value" : "dark"
         }
       ],
-      "filename" : "GST-iOS-Dark-1024x1024@1x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
