@@ -34,7 +34,7 @@ struct ServerStatus {
     let players: [String]?
     let name: String?
     let game: String?
-    let motd: String?
+    let motd: AttributedString?
     let map: String?
     let version: String?
     let ping: Int?

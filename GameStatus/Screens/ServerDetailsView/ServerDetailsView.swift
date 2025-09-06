@@ -15,10 +15,11 @@ struct ServerDetailsView: View {
     @Query private var gameServers: [GameServer]
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) var colorScheme
 
     @State private var showingConfirmationDelete: Bool = false
     @State private var showEditServerModal: Bool = false
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             VStack {
@@ -71,7 +72,7 @@ struct ServerDetailsView: View {
                                     .padding(8)
                                     .background(.statusOnline)
                                     .clipShape(Capsule())
-                                    if (response!.ping != nil) {
+                                    if response!.ping != nil {
                                         Text("\(response!.ping ?? 0) ms")
                                             .font(.caption)
                                             .fontWeight(.bold)
@@ -93,6 +94,19 @@ struct ServerDetailsView: View {
                     .foregroundColor(.primary)
                     .frame(maxWidth: .infinity, alignment: .center)
             }
+            if response?.motd != nil {
+                VStack(alignment: .center, spacing: 8) {
+                    Text(response?.motd ?? "N/A")
+                }
+                .padding(.horizontal)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(colorScheme == .dark
+                              ? Color.white.opacity(0.15)
+                              : Color.black.opacity(0.6))
+                )
+                .frame(maxWidth: .infinity)
+            }
             if let players = response?.players, !players.isEmpty {
                 NavigationLink {
                     PlayersFullView(players: players)
@@ -103,7 +117,7 @@ struct ServerDetailsView: View {
             } else {
                 PlayersListCard(players: response?.players ?? [])
             }
-            if ((response?.keywords?.isEmpty) != nil) {
+            if (response?.keywords?.isEmpty) != nil {
                 NavigationLink {
                     TagsFullView(tags: (response?.keywords!)!)
                 } label: {
@@ -117,9 +131,13 @@ struct ServerDetailsView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         Button {
-                            UIPasteboard.general.string = "\(server.address):\(String(server.port))"
+                            UIPasteboard.general.string =
+                                "\(server.address):\(String(server.port))"
                         } label: {
-                            Label("Copy Address", systemImage: "doc.on.clipboard")
+                            Label(
+                                "Copy Address",
+                                systemImage: "doc.on.clipboard"
+                            )
                         }
 
                         Button {
@@ -127,7 +145,7 @@ struct ServerDetailsView: View {
                         } label: {
                             Label("Edit Server", systemImage: "pencil")
                         }
-                        
+
                         Button {
                             showingConfirmationDelete = true
                         } label: {
@@ -218,7 +236,8 @@ struct ServerDetailsScrollView: View {
                             gameServerOsTypesIconName[response?.os ?? "U"]
                                 ?? "questionmark.circle.fill"
                         ),
-                        subtitle: gameServerOsTypesName[response?.os ?? "U"] ?? "Unknown"
+                        subtitle: gameServerOsTypesName[response?.os ?? "U"]
+                            ?? "Unknown"
                     )
                 }
             }.frame(height: 90)
@@ -284,6 +303,23 @@ struct TextDetailsView: View {
 }
 
 #Preview {
-    ServerDetailsView(server: MockData.gameServers.last!, response: .init(online: true, playersOnline: 99999, playersMax: 99999, players: nil, name: "DEBUG", game: "DebugWars", motd: nil, map: "de_dust2", version: "1.12.2", ping: 999, favicon: nil, os: "l", keywords: ["tagAlpha", "tagBeta", "tagDev", "tagTest"]))
-        .modelContainer(for: GameServer.self, inMemory: true)
+    ServerDetailsView(
+        server: MockData.gameServers.last!,
+        response: .init(
+            online: true,
+            playersOnline: 99999,
+            playersMax: 99999,
+            players: nil,
+            name: "DEBUG",
+            game: "DebugWars",
+            motd: nil,
+            map: "de_dust2",
+            version: "1.12.2",
+            ping: 999,
+            favicon: nil,
+            os: "l",
+            keywords: ["tagAlpha", "tagBeta", "tagDev", "tagTest"]
+        )
+    )
+    .modelContainer(for: GameServer.self, inMemory: true)
 }

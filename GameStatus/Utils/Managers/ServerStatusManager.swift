@@ -275,7 +275,8 @@ class ServerStatusManager: ObservableObject {
                     )
                     let serverPing = (ping != nil) ? Int(ping!) : nil
                     let players: [String] = response.players.sample?.map { $0.name } ?? []
-                    self.responses[serverId] = .init(online: true, playersOnline: response.players.online, playersMax: response.players.max, players: players, name: nil, game: nil, motd: nil, map: nil, version: response.version.name, ping: serverPing, favicon: response.favicon, os: nil, keywords: nil)
+                    let motd = response.description.getAttributedString()
+                    self.responses[serverId] = .init(online: true, playersOnline: response.players.online, playersMax: response.players.max, players: players, name: nil, game: nil, motd: motd, map: nil, version: response.version.name, ping: serverPing, favicon: response.favicon, os: nil, keywords: nil)
                 } catch {
                     print("Failed to decode response: \(error)")
                     self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
@@ -290,7 +291,7 @@ class ServerStatusManager: ObservableObject {
         DispatchQueue.main.async {
             if let info = info {
                 let serverPing = (ping != nil) ? Int(ping!) : nil
-                self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: nil, name: nil, game: info.gamemode, motd: info.motd, map: nil, version: info.version.name, ping: serverPing, favicon: nil, os: nil, keywords: nil)
+                self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: nil, name: nil, game: info.gamemode, motd: MinecraftMotd.renderString(info.motd), map: nil, version: info.version.name, ping: serverPing, favicon: nil, os: nil, keywords: nil)
             } else {
                 self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
             }

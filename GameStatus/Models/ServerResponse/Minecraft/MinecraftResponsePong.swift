@@ -5,6 +5,9 @@
 //  Created by Tom on 17/08/2025.
 //
 
+import Foundation
+import SwiftUI
+
 struct MinecraftPong: Codable {
     struct MinecraftVersion: Codable {
         let name: String
@@ -20,41 +23,74 @@ struct MinecraftPong: Codable {
         let id: String
     }
 
-    // Description supports polymorphic decoding (String or Object)
-    struct Description: Codable {
-        let value: DescriptionObject
+    enum MinecraftDescription: Codable {
+        case string(String)
+        case object(DescriptionObject)
+
+        struct DescriptionObject: Codable {
+            let text: String?
+            let color: String?
+            let bold: Bool?
+            let italic: Bool?
+            let underlined: Bool?
+            let strikethrough: Bool?
+            let extra: [Extra]?
+
+            enum Extra: Codable {
+                case object(DescriptionObject)
+                case string(String)
+
+                init(from decoder: Decoder) throws {
+                    let container = try decoder.singleValueContainer()
+                    if let obj = try? container.decode(DescriptionObject.self) {
+                        self = .object(obj)
+                    } else if let str = try? container.decode(String.self) {
+                        self = .string(str)
+                    } else {
+                        throw DecodingError.typeMismatch(
+                            Extra.self,
+                            DecodingError.Context(
+                                codingPath: decoder.codingPath,
+                                debugDescription:
+                                    "Expected DescriptionObject or String in extra"
+                            )
+                        )
+                    }
+                }
+            }
+        }
 
         init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
             if let str = try? container.decode(String.self) {
-                self.value = DescriptionObject(text: str, bold: nil, italic: nil, color: nil, obfuscated: nil, extra: nil)
+                self = .string(str)
             } else if let obj = try? container.decode(DescriptionObject.self) {
-                self.value = obj
+                self = .object(obj)
             } else {
-                throw DecodingError.typeMismatch(DescriptionObject.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Description is neither String nor DescriptionObject"))
+                throw DecodingError.typeMismatch(
+                    MinecraftDescription.self,
+                    DecodingError.Context(
+                        codingPath: decoder.codingPath,
+                        debugDescription: "Unexpected type for description"
+                    )
+                )
             }
-        }
-    }
-
-    struct DescriptionObject: Codable {
-        let text: String?
-        let bold: Bool?
-        let italic: Bool?
-        let color: String?
-        let obfuscated: Bool?
-        let extra: [DescriptionObject]?
-
-        func toPlainText() -> String {
-            let base = text ?? ""
-            if let extra = extra {
-                return base + extra.map { $0.toPlainText() }.joined()
-            }
-            return base
         }
     }
 
     let version: MinecraftVersion
     let players: MinecraftPlayers
-    //let description: Description
+    let description: MinecraftDescription
     let favicon: String?
+}
+
+extension MinecraftPong.MinecraftDescription {
+    func getAttributedString() -> AttributedString {
+        switch self {
+        case .string(let str):
+            return MinecraftMotd.renderString(str)
+        case .object(let obj):
+            return MinecraftMotd.renderDescriptionObject(obj)
+        }
+    }
 }
