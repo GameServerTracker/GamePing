@@ -21,22 +21,36 @@ final class TCPClient: @unchecked Sendable {
     private var bufferSize: Int = 0
     private var sentPingTimestamp: UInt64?
     private let queue = DispatchQueue(label: "TCPClientQueue")
-    
+
     public var ping: UInt64?
+
     public var onReady: (() -> Void)?
+    public var onFail: (() -> Void)?
+
     public var onResponse: ((TCPResponseType) -> Void)?
     public var onPingRTT: ((UInt64) -> Void)?
-    
+
     init(host: String, port: UInt16) {
         self.address = host
         self.port = port
+
+        let params = NWParameters.tcp
+        params.allowLocalEndpointReuse = true
+
+        params.prohibitExpensivePaths = false
+        params.prohibitConstrainedPaths = false
+
+        let tcpOptions = NWProtocolTCP.Options()
+        tcpOptions.connectionTimeout = 10
+        params.defaultProtocolStack.transportProtocol = tcpOptions
+
         self.connection = NWConnection(
             host: NWEndpoint.Host(host),
             port: NWEndpoint.Port(integerLiteral: port),
-            using: .tcp
+            using: params,
         )
     }
-    
+
     func start() {
         connection.stateUpdateHandler = { [weak self] state in
             guard let self = self else { return }
@@ -49,8 +63,22 @@ final class TCPClient: @unchecked Sendable {
                     self.receiveNext()
                 }
             case .failed(let error):
-                printLog("Connection failed with error: \(error)")
+                self.printLog("Client failed: \(error)")
                 self.stop()
+                self.onFail?()
+            case .waiting(let error):
+                switch error {
+                case .dns(let dnsError):
+                    self.printLog("DNS error: \(dnsError)")
+                    self.onFail?()
+                    self.stop()
+                case .posix(let posixError):
+                    self.printLog("POSIX error: \(posixError)")
+                    self.stop()
+                    self.onFail?()
+                default:
+                    self.printLog("Unhandled NWError: \(error)")
+                }
             case .cancelled:
                 printLog("Connection cancelled")
             default:
@@ -60,32 +88,39 @@ final class TCPClient: @unchecked Sendable {
         connection.start(queue: queue)
         printLog("Client Started")
     }
-    
+
     func stop() {
         connection.cancel()
         printLog("Client Stopped")
     }
-    
+
     func sendHandshake() {
         let handshakeData = self._formatHandshake()
         self.sentPingTimestamp = UInt64(Date().timeIntervalSince1970 * 1000)
-        connection.send(content: handshakeData, completion: .contentProcessed { [weak self] error in
-            guard let self = self else { return }
-            if let error = error {
-                self.printLog("Handshake send error: \(error)")
-                return
-            }
-            self.connection.send(content: Data([0x01, 0x00]), completion: .contentProcessed { error2 in
-                if let error2 = error2 {
-                    self.printLog("Second send error: \(error2)")
+        connection.send(
+            content: handshakeData,
+            completion: .contentProcessed { [weak self] error in
+                guard let self = self else { return }
+                if let error = error {
+                    self.printLog("Handshake send error: \(error)")
                     return
                 }
-            })
-        })
+                self.connection.send(
+                    content: Data([0x01, 0x00]),
+                    completion: .contentProcessed { error2 in
+                        if let error2 = error2 {
+                            self.printLog("Second send error: \(error2)")
+                            return
+                        }
+                    }
+                )
+            }
+        )
     }
-    
+
     func receiveNext() {
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) { [weak self] data, _, isComplete, error in
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) {
+            [weak self] data, _, isComplete, error in
             guard let self = self else { return }
             if let error = error {
                 printLog("Receive error: \(error)")
@@ -103,13 +138,13 @@ final class TCPClient: @unchecked Sendable {
             }
         }
     }
-    
+
     private func handleReceivedData(_ data: Data) {
         printLog("Received \(data.count) bytes")
         printLog(data.hexDescription)
-        
+
         self.receiveBuffer.append(data)
-        
+
         if self.bufferSize == 0 {
             var offset: Int = 0
             let _ = self.receiveBuffer.readVarInt(from: &offset)
@@ -118,8 +153,8 @@ final class TCPClient: @unchecked Sendable {
             self.bufferSize = jsonLength
             self.receiveBuffer.removeFirst(offset)
             printLog("Size is \(self.bufferSize) / offset is \(offset)")
-            
-            if (self.ping == nil) {
+
+            if self.ping == nil {
                 if let sent = self.sentPingTimestamp {
                     let now = UInt64(Date().timeIntervalSince1970 * 1000)
                     self.ping = now - sent
@@ -136,13 +171,13 @@ final class TCPClient: @unchecked Sendable {
             self.bufferSize = 0
         }
     }
-    
+
     private func _formatHandshake() -> Data {
         let protocolVersion: Int = 772
         let nextState: Int = 1
-        
+
         var data: Data = Data([0x00])
-        
+
         data.appendVarInt(protocolVersion)
         data.appendStringVarInt(self.address)
         data.append(UInt8(port >> 8))
@@ -150,8 +185,8 @@ final class TCPClient: @unchecked Sendable {
         data.appendVarInt(nextState)
         return Data().appendingPacket(with: data)
     }
-    
-    private func printLog(_ message: String) -> Void {
+
+    private func printLog(_ message: String) {
         print("[\(self.address):\(self.port)] \(message)")
     }
 }

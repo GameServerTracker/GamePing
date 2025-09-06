@@ -75,6 +75,11 @@ class ServerStatusManager: ObservableObject {
                 client.stop()
             }
         }
+        client.onFail = {
+            DispatchQueue.main.async {
+                self.responses[server.id] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
+            }
+        }
         client.start()
     }
     
@@ -119,6 +124,11 @@ class ServerStatusManager: ObservableObject {
             sendWithTimeout(.MC_UNCONNECTED_PING, timeout: 3) {
                 self.getBedrockResponse(info: info, ping: ping, serverId: server.id)
                 client.stop()
+            }
+        }
+        client.onFail = {
+            DispatchQueue.main.async {
+                self.responses[server.id] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
             }
         }
         client.start()
@@ -187,6 +197,11 @@ class ServerStatusManager: ObservableObject {
                     print("Finish fetch")
                     client.stop()
                 }
+            }
+        }
+        client.onFail = {
+            DispatchQueue.main.async {
+                self.responses[server.id] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
             }
         }
         client.start()

@@ -12,7 +12,7 @@ enum QueryRequestType {
     case A2S_INFO
     case A2S_PLAYER
     case A2S_RULES
-    
+
     case MC_UNCONNECTED_PING
 }
 
@@ -32,11 +32,11 @@ final class UDPClient: @unchecked Sendable {
     private var sentTimestamp: UInt64?
     private let address: String
     private let port: UInt16
-    
+
     public var messageType: QueryRequestType
     public var ping: UInt64?
     public var onResponse: ((QueryResponseType) -> Void)?
-    
+
     init(
         host: String,
         port: UInt16,
@@ -51,20 +51,46 @@ final class UDPClient: @unchecked Sendable {
             using: .udp
         )
     }
-    
+
     public var onReady: (() -> Void)?
+    public var onFail: (() -> Void)?
     private var hasStartedReceiving = false
 
     func start() {
         connection.stateUpdateHandler = { [weak self] state in
             guard let self = self else { return }
             self.printLog("Client state: \(state)")
-            if state == .ready {
+            switch state {
+            case .ready:
                 if !self.hasStartedReceiving {
                     self.hasStartedReceiving = true
                     self.receiveNext()
                 }
                 self.onReady?()
+                break
+            case .waiting(let error):
+                switch error {
+                case .dns(let dnsError):
+                    self.printLog("DNS error: \(dnsError)")
+                    self.onFail?()
+                    self.stop()
+                case .posix(let posixError):
+                    self.printLog("POSIX error: \(posixError)")
+                    self.stop()
+                    self.onFail?()
+                default:
+                    self.printLog("Unhandled NWError: \(error)")
+                }
+            case .failed(let error):
+                self.printLog("Client failed: \(error)")
+                self.stop()
+                self.onFail?()
+                break
+            case .cancelled:
+                self.printLog("Connection cancelled")
+            default:
+                self.printLog("Client state: \(state)")
+                break
             }
         }
         connection.start(queue: queue)
@@ -77,11 +103,11 @@ final class UDPClient: @unchecked Sendable {
             self.printLog("Client Stopped")
         }
     }
-    
+
     func clear() {
         splitAssemblies.removeAll()
     }
-    
+
     public func setMessageType(_ type: QueryRequestType) {
         queue.async { self.messageType = type }
     }
@@ -96,20 +122,28 @@ final class UDPClient: @unchecked Sendable {
                 type: self.messageType,
                 challenge: challenge
             )
-            self.printLog("Message to send (\(self.messageType)): \(packet.hexDescription)")
+            self.printLog(
+                "Message to send (\(self.messageType)): \(packet.hexDescription)"
+            )
             self.sentTimestamp = UInt64(Date().timeIntervalSince1970 * 1000)
-            self.connection.send(content: packet, completion: .contentProcessed({ error in
-                if let error = error {
-                    self.printLog("Error sending: \(error)")
-                }
-            }))
+            self.connection.send(
+                content: packet,
+                completion: .contentProcessed({ error in
+                    if let error = error {
+                        self.printLog("Error sending: \(error)")
+                    }
+                })
+            )
         }
     }
 
     private func receiveNext() {
         self.printLog("[\(self.address):\(self.port)] Wait for message...")
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65535) {
-            data, _, isComplete, error in
+            data,
+            _,
+            isComplete,
+            error in
             if let data = data {
                 self.printLog("isComplete: \(isComplete)")
                 self.handleReceivedData(data)
@@ -132,7 +166,7 @@ final class UDPClient: @unchecked Sendable {
                 self.send(challenge: challengeData)
             }
         }
-        
+
         if let sent = self.sentTimestamp {
             let now = UInt64(Date().timeIntervalSince1970 * 1000)
             self.ping = now - sent
@@ -190,12 +224,15 @@ final class UDPClient: @unchecked Sendable {
         // MC
         case .MC_UNCONNECTED_PING:
             var clientAliveTime: UInt64 = 5000
-            let magic: Data = Data([0x00, 0xFF, 0xFF, 0x00, 0xFE, 0xFE, 0xFE, 0xFE, 0xFD, 0xFD, 0xFD, 0xFD, 0x12, 0x34, 0x56, 0x78])
+            let magic: Data = Data([
+                0x00, 0xFF, 0xFF, 0x00, 0xFE, 0xFE, 0xFE, 0xFE, 0xFD, 0xFD,
+                0xFD, 0xFD, 0x12, 0x34, 0x56, 0x78,
+            ])
             var guid: UInt64 = .random(in: 0..<UInt64.max)
             packet = Data([0x01])
-            packet.append(withUnsafeBytes(of: &clientAliveTime, {Data($0)}))
+            packet.append(withUnsafeBytes(of: &clientAliveTime, { Data($0) }))
             packet.append(contentsOf: magic)
-            packet.append(withUnsafeBytes(of: &guid, {Data($0)}))
+            packet.append(withUnsafeBytes(of: &guid, { Data($0) }))
         }
         return packet
     }
@@ -209,23 +246,26 @@ final class UDPClient: @unchecked Sendable {
             printLog("Bad Payload")
             return (nil, false)
         }
-        
+
         if let first = payload.first, first == 0xFE {
             self.printLog("Data split detected")
-            guard let fullPayload = self.processSplitPacket(data: payload) else {
+            guard let fullPayload = self.processSplitPacket(data: payload)
+            else {
                 self.printLog("Waiting for the remaining fragments...")
                 return (nil, false)
             }
             payload = fullPayload
-        } else if payload.prefix(4) != Data([0xFF, 0xFF, 0xFF, 0xFF]) && payload.prefix(1) != Data([0x1C]) {
+        } else if payload.prefix(4) != Data([0xFF, 0xFF, 0xFF, 0xFF])
+            && payload.prefix(1) != Data([0x1C])
+        {
             printLog("Invalid Header")
             return (nil, false)
         }
-        
+
         if payload.prefix(1) != Data([0x1C]) {
             payload.removeFirst(4)
         }
-        
+
         let header: UInt8 = payload.removeFirst()
         switch header {
         case QueryResponseHeader.info.rawValue:
@@ -252,13 +292,17 @@ final class UDPClient: @unchecked Sendable {
             )
             return (.challenge(payload), true)
         case QueryResponseHeader.mcUnconnectedPong.rawValue:
-            return (.mcUnconnectedPong(parseMinecraftBedrockUnconnectedPong(payload)), false)
+            return (
+                .mcUnconnectedPong(
+                    parseMinecraftBedrockUnconnectedPong(payload)
+                ), false
+            )
         default:
             print("Response not handled: \(header) / \(payload.hexDescription)")
             return (nil, false)
         }
     }
-    
+
     func processSplitPacket(data: Data) -> Data? {
         var payload: Data = data
 
@@ -307,11 +351,14 @@ final class UDPClient: @unchecked Sendable {
         let body = payload.prefix(Int(size))
 
         // Insert into assembly for this packetId
-        var asm = splitAssemblies[packetId] ?? SplitAssembly(total: expectedTotal)
+        var asm =
+            splitAssemblies[packetId] ?? SplitAssembly(total: expectedTotal)
         asm.parts[index] = Data(body)
         splitAssemblies[packetId] = asm
 
-        printLog("Fragments for \(packetId): \(asm.parts.count) / \(expectedTotal)")
+        printLog(
+            "Fragments for \(packetId): \(asm.parts.count) / \(expectedTotal)"
+        )
 
         guard asm.parts.count == Int(expectedTotal) else {
             return nil
@@ -329,8 +376,8 @@ final class UDPClient: @unchecked Sendable {
 
         return merged
     }
-    
-    private func printLog(_ message: String) -> Void {
+
+    private func printLog(_ message: String) {
         print("[\(self.address):\(self.port)] \(message)")
     }
 }
