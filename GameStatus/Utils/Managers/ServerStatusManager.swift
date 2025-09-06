@@ -16,7 +16,7 @@ class ServerStatusManager: ObservableObject {
     func getResponse(for server: GameServer) -> ServerStatus? {
         responses[server.id]
     }
-    
+
     func fetchStatus(for server: GameServer) async {
         switch server.type {
         case GameServerType.source.rawValue:
@@ -216,7 +216,7 @@ class ServerStatusManager: ObservableObject {
             self.responses[server.id] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
             return;
         }
-        
+
         let playersMax: Int? = {
             if let max = dynamic?.sv_maxclients {
                 return Int(max)
@@ -236,7 +236,7 @@ class ServerStatusManager: ObservableObject {
             playersOnline: dynamic?.clients,
             playersMax: playersMax,
             players: playersList,
-            name: info?.vars?.projectName,
+            name: dynamic?.hostname,
             game: dynamic?.gametype,
             motd: nil,
             map: dynamic?.mapname,
@@ -262,7 +262,7 @@ class ServerStatusManager: ObservableObject {
             }
         }
     }
-    
+
     private func getMinecraftResponse(info: String?, ping: UInt64?, serverId: UUID) {
         DispatchQueue.main.async {
             if let info = info {
@@ -296,7 +296,7 @@ class ServerStatusManager: ObservableObject {
             }
         }
     }
-    
+
     func fetchAllStatuses(for servers: [GameServer]) async {
         Task {
             for server in servers {
