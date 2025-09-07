@@ -194,7 +194,6 @@ class ServerStatusManager: ObservableObject {
                 }
                 sendWithTimeout(.A2S_PLAYER, timeout: 3) {
                     self.getSourceResponse(info: info, player: players, ping: ping, serverId: server.id)
-                    print("Finish fetch")
                     client.stop()
                 }
             }
