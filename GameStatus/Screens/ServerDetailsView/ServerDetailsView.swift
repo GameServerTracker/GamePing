@@ -21,112 +21,115 @@ struct ServerDetailsView: View {
     @State private var showEditServerModal: Bool = false
 
     var body: some View {
-        VStack(alignment: .leading) {
-            VStack {
-                HStack {
-                    if response?.favicon != nil {
-                        ServerIconImage(base64Image: response?.favicon)
-                            .frame(width: 102, height: 102)
-                    } else {
-                        ServerIconDefault(
-                            iconImage: Image("serverLogo"),
-                            gradientColors: [.brandPrimary],
-                            iconSize: 52
-                        ).frame(width: 102, height: 102)
-                    }
-                    VStack(alignment: .leading) {
-                        Text(server.name)
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .lineLimit(2)
-                        Text("\(server.address):\(String(server.port))")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .textSelection(.enabled)
-                        HStack(spacing: 10) {
-                            HStack {
-                                Text(
-                                    response == nil
+        ScrollView {
+            VStack(alignment: .leading) {
+                VStack {
+                    HStack {
+                        if response?.favicon != nil {
+                            ServerIconImage(base64Image: response?.favicon)
+                                .frame(width: 102, height: 102)
+                        } else {
+                            ServerIconDefault(
+                                iconImage: Image("serverLogo"),
+                                gradientColors: [.brandPrimary],
+                                iconSize: 52
+                            ).frame(width: 102, height: 102)
+                        }
+                        VStack(alignment: .leading) {
+                            Text(server.name)
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .lineLimit(2)
+                            Text("\(server.address):\(String(server.port))")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .textSelection(.enabled)
+                            HStack(spacing: 10) {
+                                HStack {
+                                    Text(
+                                        response == nil
                                         ? "Pinging..."
                                         : (response!.online
-                                            ? "Online" : "Offline")
-                                )
-                                .font(.caption)
-                                .fontWeight(.bold)
-                                .padding(8)
-                                .background(
-                                    response == nil
-                                        ? .brandPrimary
-                                        : (response!.online
-                                            ? .statusOnline : .statusOffline)
-                                )
-                                .clipShape(Capsule())
-                                if response?.online == true {
-                                    Label(
-                                        "\(response?.playersOnline ?? 0)",
-                                        systemImage: "person.fill"
+                                           ? "Online" : "Offline")
                                     )
                                     .font(.caption)
                                     .fontWeight(.bold)
                                     .padding(8)
-                                    .background(.statusOnline)
+                                    .background(
+                                        response == nil
+                                        ? .brandPrimary
+                                        : (response!.online
+                                           ? .statusOnline : .statusOffline)
+                                    )
                                     .clipShape(Capsule())
-                                    if response!.ping != nil {
-                                        Text("\(response!.ping ?? 0) ms")
-                                            .font(.caption)
-                                            .fontWeight(.bold)
-                                            .padding(8)
-                                            .background(.statusOnline)
-                                            .clipShape(Capsule())
+                                    if response?.online == true {
+                                        Label(
+                                            "\(response?.playersOnline ?? 0)",
+                                            systemImage: "person.fill"
+                                        )
+                                        .font(.caption)
+                                        .fontWeight(.bold)
+                                        .padding(8)
+                                        .background(.statusOnline)
+                                        .clipShape(Capsule())
+                                        if response!.ping != nil {
+                                            Text("\(response!.ping ?? 0) ms")
+                                                .font(.caption)
+                                                .fontWeight(.bold)
+                                                .padding(8)
+                                                .background(.statusOnline)
+                                                .clipShape(Capsule())
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                }.frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 15)
+                ServerDetailsScrollView(server: server, response: response)
+                if response?.name != nil {
+                    Text(response?.name ?? "N/A")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
-            }.frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 20)
-            ServerDetailsScrollView(server: server, response: response)
-            if response?.name != nil {
-                Text(response?.name ?? "N/A")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-            if response?.motd != nil {
-                VStack(alignment: .center, spacing: 8) {
-                    Text(response?.motd ?? "N/A")
+                if response?.motd != nil {
+                    VStack(alignment: .center, spacing: 8) {
+                        Text(response?.motd ?? "N/A")
+                    }
+                    .padding(.horizontal)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(colorScheme == .dark
+                                  ? Color.white.opacity(0.15)
+                                  : Color.black.opacity(0.6))
+                    )
+                    .frame(maxWidth: .infinity)
                 }
-                .padding(.horizontal)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(colorScheme == .dark
-                              ? Color.white.opacity(0.15)
-                              : Color.black.opacity(0.6))
-                )
-                .frame(maxWidth: .infinity)
-            }
-            if let players = response?.players, !players.isEmpty {
-                NavigationLink {
-                    PlayersFullView(players: players)
-                } label: {
-                    PlayersListCard(players: players)
+                if let players = response?.players, !players.isEmpty {
+                    NavigationLink {
+                        PlayersFullView(players: players)
+                    } label: {
+                        PlayersListCard(players: players)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    PlayersListCard(players: response?.players ?? [])
                 }
-                .buttonStyle(.plain)
-            } else {
-                PlayersListCard(players: response?.players ?? [])
-            }
-            if (response?.keywords?.isEmpty) != nil {
-                NavigationLink {
-                    TagsFullView(tags: (response?.keywords!)!)
-                } label: {
-                    TagsListCard(tags: (response?.keywords!)!)
+                if (response?.keywords?.isEmpty) != nil {
+                    NavigationLink {
+                        TagsFullView(tags: (response?.keywords!)!)
+                    } label: {
+                        TagsListCard(tags: (response?.keywords!)!)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+                Spacer()
             }
-            Spacer()
-        }.background(Color.background)
+        }
+        .background(Color.background)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
@@ -303,7 +306,10 @@ struct TextDetailsView: View {
 }
 
 #Preview {
-    ServerDetailsView(
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: GameServer.self, configurations: config)
+
+    return ServerDetailsView(
         server: MockData.gameServers.last!,
         response: .init(
             online: true,
@@ -321,5 +327,5 @@ struct TextDetailsView: View {
             keywords: ["tagAlpha", "tagBeta", "tagDev", "tagTest"]
         )
     )
-    .modelContainer(for: GameServer.self, inMemory: true)
+    .modelContainer(container)
 }
