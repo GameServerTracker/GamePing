@@ -52,6 +52,15 @@ struct ServerFormView: View {
                                 }
                                 focusedTextField = .name
                             }
+                            .onChange(of: focusedTextField) { _ ,newFocus in
+                                if newFocus != .hostname {
+                                    let addressSplit = viewModel.serverAddress.split(separator: ":")
+                                    if addressSplit.count > 1 {
+                                        viewModel.serverPort = Int(addressSplit[1])
+                                        viewModel.serverAddress = String(addressSplit[0])
+                                    }
+                                }
+                            }
                             .submitLabel(.next)
                     }
                     HStack {
