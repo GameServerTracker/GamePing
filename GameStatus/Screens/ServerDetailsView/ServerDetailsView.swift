@@ -49,18 +49,19 @@ struct ServerDetailsView: View {
                                 HStack {
                                     Text(
                                         response == nil
-                                        ? "Pinging..."
-                                        : (response!.online
-                                           ? "Online" : "Offline")
+                                            ? "Pinging..."
+                                            : (response!.online
+                                                ? "Online" : "Offline")
                                     )
                                     .font(.caption)
                                     .fontWeight(.bold)
                                     .padding(8)
                                     .background(
                                         response == nil
-                                        ? .brandPrimary
-                                        : (response!.online
-                                           ? .statusOnline : .statusOffline)
+                                            ? .brandPrimary
+                                            : (response!.online
+                                                ? .statusOnline
+                                                : .statusOffline)
                                     )
                                     .clipShape(Capsule())
                                     if response?.online == true {
@@ -96,17 +97,7 @@ struct ServerDetailsView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
                 if response?.motd != nil {
-                    VStack(alignment: .center, spacing: 8) {
-                        Text(response?.motd ?? "N/A")
-                    }
-                    .padding(.horizontal)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(colorScheme == .dark
-                                  ? Color.white.opacity(0.15)
-                                  : Color.black.opacity(0.6))
-                    )
-                    .frame(maxWidth: .infinity)
+                    MotdCard(motd: (response?.motd)!)
                 }
                 if let players = response?.players, !players.isEmpty {
                     NavigationLink {
@@ -130,57 +121,61 @@ struct ServerDetailsView: View {
             }
         }
         .background(Color.background)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button {
-                            UIPasteboard.general.string =
-                                "\(server.address):\(String(server.port))"
-                        } label: {
-                            Label(
-                                "Copy Address",
-                                systemImage: "doc.on.clipboard"
-                            )
-                        }
-
-                        Button {
-                            showEditServerModal = true
-                        } label: {
-                            Label("Edit Server", systemImage: "pencil")
-                        }
-
-                        Button {
-                            showingConfirmationDelete = true
-                        } label: {
-                            Label("Delete Server", systemImage: "trash")
-                                .foregroundStyle(Color.statusOffline)
-                        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button {
+                        UIPasteboard.general.string =
+                            "\(server.address):\(String(server.port))"
                     } label: {
+                        Label(
+                            "Copy Address",
+                            systemImage: "doc.on.clipboard"
+                        )
+                    }
+
+                    Button {
+                        showEditServerModal = true
+                    } label: {
+                        Label("Edit Server", systemImage: "pencil")
+                    }
+
+                    Button {
+                        showingConfirmationDelete = true
+                    } label: {
+                        Label("Delete Server", systemImage: "trash")
+                            .foregroundStyle(Color.statusOffline)
+                    }
+                } label: {
+                    if #available(iOS 26, *) {
+                        Image(systemName: "ellipsis")
+                    } else {
                         Image(systemName: "ellipsis.circle")
                     }
                 }
             }
-            .confirmationDialog(
-                "Are you sure you want to delete this server ?",
-                isPresented: $showingConfirmationDelete
-            ) {
-                Button("Delete", role: .destructive) {
-                    do {
-                        context.delete(server)
-                        try context.save()
-                        dismiss()
-                    } catch {
-                        print("Error during the deletion: \(error)")
-                    }
-                }
-                Button("Cancel", role: .cancel) {
-                    showingConfirmationDelete = false
+        }
+        .confirmationDialog(
+            "Are you sure you want to delete this server ?",
+            isPresented: $showingConfirmationDelete
+        ) {
+            Button("Delete", role: .destructive) {
+                do {
+                    context.delete(server)
+                    try context.save()
+                    dismiss()
+                } catch {
+                    print("Error during the deletion: \(error)")
                 }
             }
-            .sheet(isPresented: $showEditServerModal) {
-                ServerFormView(server: server, isShowing: $showEditServerModal)
-                    .presentationBackground(Color.background)
+            Button("Cancel", role: .cancel) {
+                showingConfirmationDelete = false
             }
+        }
+        .sheet(isPresented: $showEditServerModal) {
+            ServerFormView(server: server, isShowing: $showEditServerModal)
+                .presentationBackground(Color.background)
+        }
     }
 }
 
@@ -307,7 +302,10 @@ struct TextDetailsView: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: GameServer.self, configurations: config)
+    let container = try! ModelContainer(
+        for: GameServer.self,
+        configurations: config
+    )
 
     return ServerDetailsView(
         server: MockData.gameServers.last!,

@@ -58,6 +58,11 @@ struct ServerListView: View {
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .navigationTitle("Servers")
+            .toolbar {
+                ToolbarItem(placement: .bottomBar) {
+                    
+                }
+            }
             .overlay(alignment: .bottomTrailing) {
                 HStack {
                     if isPreview {
@@ -81,18 +86,32 @@ struct ServerListView: View {
                         }.padding(.horizontal)
                     }
                     Spacer()
-                    Button {
-                        viewModel.showAddServerModal = true
-                        viewModel.selectedServer = nil
-                    } label: {
-                        Image(systemName: "plus")
-                            .imageScale(.large)
-                            .frame(width: 64, height: 64)
-                            .foregroundColor(.white)
-                            .background(Color.brandPrimary)
-                            .clipShape(Circle())
-                            .shadow(radius: 2.5)
-                    }.padding(.vertical).padding(.horizontal)
+                    
+                    if #available(iOS 26, *) {
+                        Button {
+                            viewModel.showAddServerModal = true
+                            viewModel.selectedServer = nil
+                        } label: {
+                            Image(systemName: "plus")
+                                .imageScale(.large)
+                                .frame(width: 64, height: 64)
+                                .foregroundColor(.white)
+                        }.glassEffect(.regular.tint(.brandPrimary), in: Circle())
+                        .padding(.vertical).padding()
+                    } else {
+                        Button {
+                            viewModel.showAddServerModal = true
+                            viewModel.selectedServer = nil
+                        } label: {
+                            Image(systemName: "plus")
+                                .imageScale(.large)
+                                .frame(width: 64, height: 64)
+                                .foregroundColor(.white)
+                                .background(Color.brandPrimary)
+                                .clipShape(Circle())
+                                .shadow(radius: 2.5)
+                        }.padding(.vertical).padding(.horizontal)
+                    }
                 }
             }
         }.sheet(isPresented: $viewModel.showAddServerModal) {

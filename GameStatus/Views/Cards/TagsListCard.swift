@@ -15,42 +15,39 @@ struct TagsListCard: View {
     ]
     
     private let tagCardLimit: Int = 6
-    
+
     var body: some View {
-        VStack(alignment: .center, spacing: 8) {
-            HStack {
-                Label("Tags", systemImage: "number")
-                    .font(.headline)
-                Spacer()
-                Image(systemName: "chevron.forward")
-                    .foregroundColor(.brandPrimary)
-            }
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
-                ForEach(tags.prefix(5), id: \.self) { tag in
-                    if (!tag.isEmpty) {
-                        Text(tag)
-                            .font(.caption)
-                            .foregroundStyle(.white)
-                            .fontWeight(.light)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(.blue)
-                            .clipShape(Capsule())
+        CardContainer {
+            VStack(alignment: .center, spacing: 8) {
+                HStack {
+                    Label("Tags", systemImage: "number")
+                        .font(.headline)
+                    Spacer()
+                    Image(systemName: "chevron.forward")
+                        .foregroundColor(.brandPrimary)
+                }
+                LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
+                    ForEach(tags.prefix(5), id: \.self) { tag in
+                        if (!tag.isEmpty) {
+                            Text(tag)
+                                .font(.caption)
+                                .foregroundStyle(.white)
+                                .fontWeight(.light)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(.blue)
+                                .clipShape(Capsule())
+                        }
+                    }
+                    if tags.count > tagCardLimit {
+                        Text("\(tags.count - tagCardLimit) more...")
+                            .frame(alignment: .leading)
+                            .font(.body)
+                            .fontWeight(.semibold)
                     }
                 }
-                if tags.count > tagCardLimit {
-                    Text("\(tags.count - tagCardLimit) more...")
-                        .frame(alignment: .leading)
-                        .font(.body)
-                        .fontWeight(.semibold)
-                }
             }
-        }.padding()
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemGray5))
-            )
-            .padding(.horizontal)
+        }
     }
 }
 

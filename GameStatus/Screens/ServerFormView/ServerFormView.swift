@@ -99,10 +99,12 @@ struct ServerFormView: View {
                                                     "document.on.clipboard.fill"
                                             )
                                             .resizable()
+                                            .scaledToFit()
                                             .foregroundStyle(
                                                 colorScheme == .dark
                                                     ? .white : .black
                                             )
+                                            .padding(.horizontal)
                                         }
                                         Spacer()
                                     }
@@ -169,18 +171,35 @@ struct ServerFormView: View {
             )
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        viewModel.save(context: context)
-                        isShowing = false
-                    } label: {
-                        Text("Save")
-                    }.disabled(!viewModel.isValid)
+                    if #available(iOS 26, *) {
+                        Button {
+                            viewModel.save(context: context)
+                            isShowing = false
+                        } label: {
+                            Image(systemName: "checkmark")
+                        }.disabled(!viewModel.isValid).tint(viewModel.isValid ? .green : .primary)
+                    } else {
+                        Button {
+                            viewModel.save(context: context)
+                            isShowing = false
+                        } label: {
+                            Text("Save")
+                        }.disabled(!viewModel.isValid)
+                    }
                 }
                 ToolbarItem(placement: .cancellationAction) {
-                    Button {
-                        isShowing = false
-                    } label: {
-                        Text("Cancel")
+                    if #available(iOS 26, *) {
+                        Button {
+                            isShowing = false
+                        } label: {
+                            Image(systemName: "xmark")
+                        }
+                    } else {
+                        Button {
+                            isShowing = false
+                        } label: {
+                            Text("Cancel")
+                        }
                     }
                 }
             }
