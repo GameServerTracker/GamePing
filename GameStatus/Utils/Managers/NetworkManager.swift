@@ -26,7 +26,7 @@ final class NetworkManager {
             let decoded = try JSONDecoder().decode(FivemInfoResponse.self, from: data)
             return decoded
         } catch {
-            print("Failed to decode response: \(error)")
+            print("[\(#fileID):\(#line)] \(#function) failed: \(error)")
             return nil
         }
     }
@@ -47,7 +47,11 @@ final class NetworkManager {
             let decoded = try JSONDecoder().decode(FiveMServerResponse.self, from: data)
             return decoded
         } catch {
-            print("Failed to decode response: \(error)")
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("[\(#fileID):\(#line)] \(#function) Request cancelled")
+                return nil
+            }
+            print("[\(#fileID):\(#line)] \(#function) failed: \(error)")
             return nil
         }
     }
@@ -68,7 +72,7 @@ final class NetworkManager {
             let decoded = try JSONDecoder().decode(FivemPlayersResponse.self, from: data)
             return decoded.players ?? []
         } catch {
-            print("Failed to decode response: \(error)")
+            print("[\(#fileID):\(#line)] \(#function) failed: \(error)")
             return nil
         }
     }

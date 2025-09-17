@@ -12,28 +12,45 @@ import Foundation
 class ServerStatusManager: ObservableObject {
     @Published var responses: [UUID: ServerStatus] = [:];
     private var clients: [UUID: Sendable] = [:];
-    
+    private var inflightTasks: [UUID: Task<Void, Never>] = [:]
+
     func getResponse(for server: GameServer) -> ServerStatus? {
         responses[server.id]
     }
 
     func fetchStatus(for server: GameServer) async {
+        // Coalesce concurrent fetches for the same server ID
+        let id = server.id
+        if let existing = inflightTasks[id] {
+            print("[\(server.name)][\(server.type)] Fetch is already in progress")
+            _ = await existing.value
+            return
+        }
+
+        // Create a new task responsible for performing the actual fetch based on server type
+        let task = Task { [weak self] in
+            guard let self else { return }
+            await self.performFetch(for: server)
+        }
+        inflightTasks[id] = task
+
+        // Await completion, then clear inflight entry
+        _ = await task.value
+        inflightTasks[id] = nil
+    }
+
+    private func performFetch(for server: GameServer) async {
         switch server.type {
         case GameServerType.source.rawValue:
             await fetchSourceStatus(for: server)
-            break
         case GameServerType.bedrock.rawValue:
             await fetchBedrockStatus(for: server)
-            break
         case GameServerType.minecraft.rawValue:
             await fetchMinecraftStatus(for: server)
-            break
         case GameServerType.fivem.rawValue:
             await fetchFivemStatus(for: server)
-            break
         default:
             print("[\(server.name)][\(server.type)] Server type not supported")
-            break
         }
     }
 
@@ -298,10 +315,9 @@ class ServerStatusManager: ObservableObject {
     }
 
     func fetchAllStatuses(for servers: [GameServer]) async {
-        Task {
-            for server in servers {
-                await fetchStatus(for: server)
-            }
+        for server in servers {
+            await fetchStatus(for: server)
         }
     }
 }
+

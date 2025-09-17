@@ -15,6 +15,7 @@ struct ServerDetailsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) var colorScheme
+    @EnvironmentObject var statusManager: ServerStatusManager
 
     @State private var showingConfirmationDelete: Bool = false
     @State private var showEditServerModal: Bool = false
@@ -117,6 +118,14 @@ struct ServerDetailsView: View {
                     .buttonStyle(.plain)
                 }
                 Spacer()
+            }
+        }
+        .refreshable {
+            Task {
+                if (response != nil) {
+                    statusManager.responses.removeValue(forKey: server.id)
+                    await statusManager.fetchStatus(for: server)
+                }
             }
         }
         .background(Color.background)
