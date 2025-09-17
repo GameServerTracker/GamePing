@@ -12,7 +12,6 @@ struct ServerDetailsView: View {
     let server: GameServer
     let response: ServerStatus?
 
-    @Query private var gameServers: [GameServer]
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) var colorScheme

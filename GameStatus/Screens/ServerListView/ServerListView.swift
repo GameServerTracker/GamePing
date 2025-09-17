@@ -58,11 +58,6 @@ struct ServerListView: View {
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .navigationTitle("Servers")
-            .toolbar {
-                ToolbarItem(placement: .bottomBar) {
-                    
-                }
-            }
             .overlay(alignment: .bottomTrailing) {
                 HStack {
                     if isPreview {
