@@ -1,0 +1,169 @@
+{
+  "color-space-for-untagged-svg-colors" : "display-p3",
+  "fill-specializations" : [
+    {
+      "value" : "automatic"
+    },
+    {
+      "appearance" : "dark",
+      "value" : "automatic"
+    }
+  ],
+  "groups" : [
+    {
+      "blend-mode-specializations" : [
+        {
+          "value" : "normal"
+        },
+        {
+          "appearance" : "dark",
+          "value" : "normal"
+        }
+      ],
+      "blur-material-specializations" : [
+        {
+          "value" : 0.34
+        },
+        {
+          "appearance" : "dark",
+          "value" : null
+        },
+        {
+          "appearance" : "tinted",
+          "value" : null
+        }
+      ],
+      "hidden" : false,
+      "layers" : [
+        {
+          "glass-specializations" : [
+            {
+              "value" : false
+            },
+            {
+              "appearance" : "dark",
+              "value" : true
+            }
+          ],
+          "image-name" : "nes_controller.svg",
+          "name" : "nes_controller",
+          "position" : {
+            "scale" : 1.3,
+            "translation-in-points" : [
+              82.765625,
+              188.84375
+            ]
+          }
+        },
+        {
+          "blend-mode" : "normal",
+          "fill" : "automatic",
+          "glass-specializations" : [
+            {
+              "value" : false
+            },
+            {
+              "appearance" : "dark",
+              "value" : true
+            }
+          ],
+          "hidden" : false,
+          "image-name" : "Group 8.svg",
+          "name" : "Group 8",
+          "position" : {
+            "scale" : 1.26,
+            "translation-in-points" : [
+              0,
+              -0.515625
+            ]
+          }
+        },
+        {
+          "blend-mode" : "normal",
+          "fill" : "automatic",
+          "hidden" : true,
+          "image-name" : "gst-logo.svg",
+          "name" : "gst-logo",
+          "opacity" : 1,
+          "position" : {
+            "scale" : 1.63,
+            "translation-in-points" : [
+              64.7265625,
+              327.8984375
+            ]
+          }
+        }
+      ],
+      "lighting-specializations" : [
+        {
+          "value" : "individual"
+        },
+        {
+          "appearance" : "dark",
+          "value" : "combined"
+        },
+        {
+          "appearance" : "tinted",
+          "value" : "combined"
+        }
+      ],
+      "opacity" : 1,
+      "shadow-specializations" : [
+        {
+          "value" : {
+            "kind" : "layer-color",
+            "opacity" : 0.69
+          }
+        },
+        {
+          "appearance" : "dark",
+          "value" : {
+            "kind" : "layer-color",
+            "opacity" : 0.69
+          }
+        }
+      ],
+      "specular-specializations" : [
+        {
+          "value" : false
+        },
+        {
+          "appearance" : "dark",
+          "value" : false
+        },
+        {
+          "appearance" : "tinted",
+          "value" : false
+        }
+      ],
+      "translucency-specializations" : [
+        {
+          "value" : {
+            "enabled" : false,
+            "value" : 0.08
+          }
+        },
+        {
+          "appearance" : "dark",
+          "value" : {
+            "enabled" : false,
+            "value" : 0.29
+          }
+        },
+        {
+          "appearance" : "tinted",
+          "value" : {
+            "enabled" : true,
+            "value" : 0.08
+          }
+        }
+      ]
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
