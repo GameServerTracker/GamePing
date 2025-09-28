@@ -18,6 +18,9 @@ struct ServerFormView: View {
     @StateObject var viewModel: ServerFormViewModel
     @FocusState private var focusedTextField: FormTextField?
 
+    @State private var bgColor =
+        Color(.sRGB, red: 0.98, green: 0.9, blue: 0.2)
+    @State private var sheetDetent: PresentationDetent = .height(200)
     @Binding var isShowing: Bool
 
     init(server: GameServer?, isShowing: Binding<Bool>) {
@@ -35,6 +38,22 @@ struct ServerFormView: View {
     var body: some View {
         NavigationView {
             Form {
+                HStack(alignment: .center) {
+                    Spacer()
+                    Button {
+                        viewModel.isIconEditedSheetPresented.toggle()
+                        print("Click")
+                    } label: {
+                        ServerIconDefault(
+                            iconImage: Image("serverLogo"),
+                            gradientColors: [bgColor],
+                            iconSize: 52
+                        )
+                        .frame(width: 102, height: 102)
+                        .padding(.top, 8)
+                    }.buttonStyle(.plain)
+                    Spacer()
+                }.listRowBackground(Color.clear).padding(.bottom, -15)
                 Section {
                     HStack {
                         Image(systemName: "server.rack")
@@ -169,6 +188,65 @@ struct ServerFormView: View {
             }.navigationTitle(
                 Text(server == nil ? "Add a server" : "Edit server")
             )
+            .sheet(isPresented: $viewModel.isIconEditedSheetPresented) {
+                NavigationStack {
+                    VStack {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            Grid(horizontalSpacing: 20) {
+                                GridRow {
+                                    ForEach(0..<16) { i in
+                                        Button {
+
+                                        } label: {
+                                            ServerIconDefault(
+                                                iconImage: Image("serverLogo"),
+                                                gradientColors: [bgColor],
+                                                iconSize: 32
+                                            )
+                                            .frame(width: 72, height: 72)
+                                        }
+                                    }
+                                }
+                                GridRow {
+                                    ForEach(0..<16) { i in
+                                        Text("Minecraft")
+                                            .font(.callout)
+                                            .fontWeight(.semibold)
+                                            .lineLimit(1)
+                                            .allowsTightening(true)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                        }.padding([.leading], 16)
+
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .principal) {
+                            Text("Personalize Icon")
+                                .font(.headline)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.9)
+                        }
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            ColorPicker(
+                                "",
+                                selection: $bgColor,
+                                supportsOpacity: false
+                            ).labelsHidden()
+                        }
+                    }
+                    .navigationBarTitleDisplayMode(.inline)
+                    .padding(10)
+                }
+                .presentationDetents(
+                    [.height(200), .large],
+                    selection: $sheetDetent
+                )
+                .presentationDragIndicator(.hidden)
+                //.presentationContentInteraction(.scrolls)
+            }
+
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     if #available(iOS 26, *) {
@@ -177,7 +255,9 @@ struct ServerFormView: View {
                             isShowing = false
                         } label: {
                             Image(systemName: "checkmark")
-                        }.disabled(!viewModel.isValid).tint(viewModel.isValid ? .green : .primary)
+                        }.disabled(!viewModel.isValid).tint(
+                            viewModel.isValid ? .green : .primary
+                        )
                     } else {
                         Button {
                             viewModel.save(context: context)

@@ -16,6 +16,8 @@ final class ServerFormViewModel: ObservableObject {
     @Published var serverPort: Int? = nil
     @Published var serverType: GameServerType = .minecraft
     
+    @Published var isIconEditedSheetPresented: Bool = false
+    
     init(server: GameServer? = nil) {
         self.server = server
         if let server = server {
