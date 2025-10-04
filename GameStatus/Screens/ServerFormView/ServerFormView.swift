@@ -18,8 +18,6 @@ struct ServerFormView: View {
     @StateObject var viewModel: ServerFormViewModel
     @FocusState private var focusedTextField: FormTextField?
 
-    @State private var bgColor =
-        Color(.sRGB, red: 0.98, green: 0.9, blue: 0.2)
     @State private var sheetDetent: PresentationDetent = .height(200)
     @Binding var isShowing: Bool
 
@@ -45,9 +43,10 @@ struct ServerFormView: View {
                         print("Click")
                     } label: {
                         ServerIconDefault(
-                            iconImage: Image("serverLogo"),
-                            gradientColors: [bgColor],
-                            iconSize: 52
+                            iconImage: Image(viewModel.iconName),
+                            gradientColors: [viewModel.bgColor],
+                            iconSize: 52,
+                            foregroundColor: viewModel.fgColor,
                         )
                         .frame(width: 102, height: 102)
                         .padding(.top, 8)
@@ -105,13 +104,11 @@ struct ServerFormView: View {
                                 if focusedTextField == .hostname {
                                     HStack {
                                         Button {
-                                            UIPasteboard.general.string?
-                                                .withCString { cString in
-                                                    viewModel.serverAddress =
-                                                        String(
-                                                            cString: cString
-                                                        )
-                                                }
+                                            if let paste = UIPasteboard.general
+                                                .string
+                                            {
+                                                viewModel.serverAddress = paste
+                                            }
                                         } label: {
                                             Image(
                                                 systemName:
@@ -177,9 +174,7 @@ struct ServerFormView: View {
                 } header: {
                     Text("Server Info")
                 } footer: {
-                    if viewModel.serverType.rawValue
-                        == GameServerType.fivem.rawValue
-                    {
+                    if viewModel.serverType == .fivem {
                         Text(
                             "Following iOS constraints, This server type requires to uses an external API to fetch the server status.\ngamerservertracker.io"
                         )
@@ -194,27 +189,57 @@ struct ServerFormView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             Grid(horizontalSpacing: 20) {
                                 GridRow {
-                                    ForEach(0..<16) { i in
+                                    ForEach(
+                                        customServerIcons.indices,
+                                        id: \.self
+                                    ) { idx in
                                         Button {
-
+                                            viewModel.iconName =
+                                                customServerIcons[idx].imageName
                                         } label: {
                                             ServerIconDefault(
-                                                iconImage: Image("serverLogo"),
-                                                gradientColors: [bgColor],
-                                                iconSize: 32
+                                                iconImage: Image(
+                                                    customServerIcons[idx]
+                                                        .imageName
+                                                ),
+                                                gradientColors: [
+                                                    viewModel.bgColor
+                                                ],
+                                                iconSize: customServerIcons[idx]
+                                                    .size,
+                                                foregroundColor: viewModel
+                                                    .fgColor
                                             )
                                             .frame(width: 72, height: 72)
                                         }
                                     }
                                 }
                                 GridRow {
-                                    ForEach(0..<16) { i in
-                                        Text("Minecraft")
-                                            .font(.callout)
-                                            .fontWeight(.semibold)
-                                            .lineLimit(1)
-                                            .allowsTightening(true)
-                                            .foregroundStyle(.secondary)
+                                    ForEach(
+                                        customServerIcons.indices,
+                                        id: \.self
+                                    ) { idx in
+                                        if customServerIcons[idx].imageName
+                                            == viewModel.iconName
+                                        {
+                                            Text(customServerIcons[idx].name)
+                                                .font(.callout)
+                                                .fontWeight(.semibold)
+                                                .lineLimit(1)
+                                                .allowsTightening(true)
+                                                .foregroundStyle(.secondary)
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 4)
+                                                .background(.thinMaterial)
+                                                .clipShape(Capsule())
+                                        } else {
+                                            Text(customServerIcons[idx].name)
+                                                .font(.callout)
+                                                .fontWeight(.semibold)
+                                                .lineLimit(1)
+                                                .allowsTightening(true)
+                                                .foregroundStyle(.secondary)
+                                        }
                                     }
                                 }
                             }
@@ -229,11 +254,18 @@ struct ServerFormView: View {
                                 .minimumScaleFactor(0.9)
                         }
                         ToolbarItem(placement: .navigationBarTrailing) {
-                            ColorPicker(
-                                "",
-                                selection: $bgColor,
-                                supportsOpacity: false
-                            ).labelsHidden()
+                            HStack {
+                                ColorPicker(
+                                    "",
+                                    selection: $viewModel.bgColor,
+                                    supportsOpacity: false
+                                ).labelsHidden()
+                                ColorPicker(
+                                    "",
+                                    selection: $viewModel.fgColor,
+                                    supportsOpacity: false
+                                ).labelsHidden()
+                            }
                         }
                     }
                     .navigationBarTitleDisplayMode(.inline)
@@ -244,7 +276,6 @@ struct ServerFormView: View {
                     selection: $sheetDetent
                 )
                 .presentationDragIndicator(.hidden)
-                //.presentationContentInteraction(.scrolls)
             }
 
             .toolbar {

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<svg width="48" height="48" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <defs>
+  <style>.a{fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;}</style>
+ </defs>
+ <g class="layer">
+  <title>Layer 1</title>
+  <rect class="a" height="3.73" id="svg_1" transform="translate(-10.4307 25.1818) rotate(-45)" width="3.73" x="23.32" y="23.32"/>
+  <rect class="a" height="3" id="svg_2" transform="translate(-12.2186 29.4983) rotate(-45)" width="6.75" x="26.12" y="28"/>
+  <polygon class="a" id="svg_3" points="34.56 29.788 29.788 34.56 35.698 42.5 42.5 35.698 34.56 29.788"/>
+  <rect class="a" height="3" id="svg_4" transform="translate(50.3637 38.1547) matrix(-1 -1.22465e-16 1.22465e-16 -1 0 0)" width="6.75" x="21.81" y="17.58"/>
+  <polygon class="a" id="svg_5" points="21.808 15.294 28.556 15.294 29.992 5.5 20.372 5.5 21.808 15.294"/>
+  <rect class="a" height="3" id="svg_6" transform="translate(44.2592 6.1045) rotate(90)" width="6.75" x="15.7" y="23.68"/>
+  <polygon class="a" id="svg_7" points="15.294 28.556 15.294 21.808 5.5 20.372 5.5 29.992 15.294 28.556"/>
+ </g>
+</svg>

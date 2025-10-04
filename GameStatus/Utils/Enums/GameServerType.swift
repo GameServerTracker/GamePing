@@ -1,6 +1,6 @@
 //
 //  GameServerType.swift
-//  GameStatus
+//  GameStatus/Users/blitz/dev/swift/GameStatus/GameStatus/Utils/Enums/GameServerType.swift
 //
 //  Created by Tom on 21/06/2025.
 //
@@ -27,7 +27,7 @@ let gameServerTypesIconName: [String: String] = [
     GameServerType.minecraft.rawValue: "minecraft_icon",
     GameServerType.bedrock.rawValue: "minecraft_icon",
     GameServerType.source.rawValue: "source_icon",
-    GameServerType.fivem.rawValue: "fivem_icon",
+    GameServerType.fivem.rawValue: "fivem",
     GameServerType.unknown.rawValue: "questionmark.circle.fill",
 ];
 

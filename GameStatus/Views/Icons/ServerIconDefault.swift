@@ -12,11 +12,13 @@ struct ServerIconDefault: View {
     let iconImage: Image
     let gradientColors: [Color]
     let iconSize: CGFloat
+    let foregroundColor: Color
 
-    init(iconImage: Image, gradientColors: [Color], iconSize: CGFloat = 24) {
+    init(iconImage: Image, gradientColors: [Color], iconSize: CGFloat = 24, foregroundColor: Color = .white) {
         self.iconImage = iconImage
         self.gradientColors = gradientColors
         self.iconSize = iconSize
+        self.foregroundColor = foregroundColor
     }
     
     var body: some View {
@@ -34,7 +36,7 @@ struct ServerIconDefault: View {
                     .resizable()
                     .scaledToFill()
                     .frame(width: iconSize, height: iconSize)
-                    .foregroundColor(.white)
+                    .foregroundColor(foregroundColor)
                     .font(.system(size: iconSize))
             )
     }
@@ -49,6 +51,6 @@ struct ServerIconDefault: View {
         .frame(width: 128, height: 128)
     ServerIconDefault(iconImage: Image("sourceengine_icon"), gradientColors: [.orange], iconSize: 82)
         .frame(width: 128, height: 128)
-    ServerIconDefault(iconImage: Image("fivem_icon"), gradientColors: [.white], iconSize: 82)
+    ServerIconDefault(iconImage: Image("fivem"), gradientColors: [.white], iconSize: 82)
         .frame(width: 128, height: 128)
 }
