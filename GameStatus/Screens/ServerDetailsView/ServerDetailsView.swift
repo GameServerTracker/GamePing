@@ -30,9 +30,9 @@ struct ServerDetailsView: View {
                                 .frame(width: 102, height: 102)
                         } else {
                             ServerIconDefault(
-                                iconImage: Image("serverLogo"),
-                                gradientColors: [.brandPrimary],
-                                iconSize: 52
+                                iconImage: Image(server.iconName ?? "serverLogo"),
+                                gradientColors: [(server.iconBgColor != nil) ? Color(hex: server.iconBgColor!) : .brandPrimary],
+                                foregroundColor: (server.iconBgColor != nil) ? Color(hex: server.iconFgColor!) : .white
                             ).frame(width: 102, height: 102)
                         }
                         VStack(alignment: .leading) {

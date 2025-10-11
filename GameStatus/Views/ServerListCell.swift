@@ -24,9 +24,9 @@ struct ServerListCell: View {
                         ServerIconImage(base64Image: response?.favicon)
                     } else {
                         ServerIconDefault(
-                            iconImage: Image("serverLogo"),
-                            gradientColors: [.brandPrimary],
-                            iconSize: 32
+                            iconImage: Image(server.iconName ?? "serverLogo"),
+                            gradientColors: [(server.iconBgColor != nil) ? Color(hex: server.iconBgColor!) : .brandPrimary ],
+                            foregroundColor: (server.iconBgColor != nil) ? Color(hex: server.iconFgColor!) : .white
                         )
                     }
                 }.frame(width: 64, height: 64)

@@ -12,7 +12,11 @@ var isPreview: Bool =
     (ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1")
 
 struct ServerListView: View {
-    @Query(sort: [SortDescriptor(\GameServer.type, order: .forward), SortDescriptor(\GameServer.name, order: .forward)])
+    @Query(sort: [
+        SortDescriptor(\GameServer.order, order: .forward),
+        SortDescriptor(\GameServer.type, order: .forward),
+        SortDescriptor(\GameServer.name, order: .forward),
+    ])
     private var gameServers: [GameServer]
 
     @EnvironmentObject var statusManager: ServerStatusManager
@@ -31,25 +35,39 @@ struct ServerListView: View {
                 } else {
                     Color(.background)
                         .edgesIgnoringSafeArea(.all)
-                    List(gameServers, id: \.id) { server in
-                        NavigationLink {
-                            ServerDetailsView(server: server, response: statusManager.getResponse(for: server))
-                        } label: {
-                            ServerListCell(
-                                server: server,
-                                response: statusManager.getResponse(
-                                    for: server
-                                ),
-                                selectedServer: $viewModel.selectedServer
-                            )
-                        }
-                        .listRowBackground(Color.clear)
-                        .task {
-                            if statusManager.getResponse(for: server) == nil {
-                                await statusManager.fetchStatus(for: server)
+                    List {
+                        ForEach(gameServers, id: \.id) { server in
+                            NavigationLink {
+                                ServerDetailsView(
+                                    server: server,
+                                    response: statusManager.getResponse(for: server)
+                                )
+                            } label: {
+                                ServerListCell(
+                                    server: server,
+                                    response: statusManager.getResponse(
+                                        for: server
+                                    ),
+                                    selectedServer: $viewModel.selectedServer
+                                )
+                            }
+                            .listRowBackground(Color.clear)
+                            .task {
+                                if statusManager.getResponse(for: server) == nil {
+                                    await statusManager.fetchStatus(for: server)
+                                }
                             }
                         }
-                    }.refreshable {
+                        .onMove(perform: { indices, newOffset in
+                            var s = gameServers.sorted(by: { $0.order < $1.order })
+                            s.move(fromOffsets: indices, toOffset: newOffset)
+                            for (index, item) in s.enumerated() {
+                                item.order = index
+                            }
+                            try? self.context.save()
+                        })
+                    }
+                    .refreshable {
                         statusManager.responses.removeAll()
                         await statusManager.fetchAllStatuses(for: gameServers)
                     }
@@ -81,7 +99,7 @@ struct ServerListView: View {
                         }.padding(.horizontal)
                     }
                     Spacer()
-                    
+
                     if #available(iOS 26, *) {
                         Button {
                             viewModel.showAddServerModal = true
@@ -91,7 +109,10 @@ struct ServerListView: View {
                                 .imageScale(.large)
                                 .frame(width: 64, height: 64)
                                 .foregroundColor(.white)
-                        }.glassEffect(.regular.tint(.brandPrimary), in: Circle())
+                        }.glassEffect(
+                            .regular.tint(.brandPrimary),
+                            in: Circle()
+                        )
                         .padding(.vertical).padding()
                     } else {
                         Button {

@@ -16,14 +16,21 @@ class GameServer {
     var port: Int
     var type: String
     var image: String?
+    var iconBgColor: String? = nil
+    var iconFgColor: String? = nil
+    var iconName: String? = nil
+    var order: Int = 0
     
-    init(name: String, address: String, port: Int, type: GameServerType, image: String? = nil) {
+    init(name: String, address: String, port: Int, type: GameServerType, image: String? = nil, iconBgColor: String? = nil, iconFgColor: String? = nil, iconName: String? = nil) {
         self.id = UUID()
         self.name = name
         self.address = address
         self.port = port
         self.type = type.rawValue
         self.image = image
+        self.iconBgColor = iconBgColor
+        self.iconFgColor = iconFgColor
+        self.iconName = iconName
     }
 }
 
