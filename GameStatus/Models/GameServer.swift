@@ -19,7 +19,7 @@ class GameServer {
     var iconBgColor: String? = nil
     var iconFgColor: String? = nil
     var iconName: String? = nil
-    var order: Int = 0;
+    var order: Int = 0
     
     init(name: String, address: String, port: Int, type: GameServerType, image: String? = nil, iconBgColor: String? = nil, iconFgColor: String? = nil, iconName: String? = nil) {
         self.id = UUID()

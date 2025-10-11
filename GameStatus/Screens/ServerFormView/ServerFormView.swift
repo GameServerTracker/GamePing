@@ -40,7 +40,6 @@ struct ServerFormView: View {
                     Spacer()
                     Button {
                         viewModel.isIconEditedSheetPresented.toggle()
-                        print("Click")
                     } label: {
                         ServerIconDefault(
                             iconImage: Image(viewModel.iconName),

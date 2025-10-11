@@ -1,6 +1,6 @@
 //
 //  GameServerType.swift
-//  GameStatus/Users/blitz/dev/swift/GameStatus/GameStatus/Utils/Enums/GameServerType.swift
+//  GameStatus
 //
 //  Created by Tom on 21/06/2025.
 //
