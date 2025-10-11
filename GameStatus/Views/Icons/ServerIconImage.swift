@@ -28,8 +28,7 @@ struct ServerIconImage: View {
         } else {
             ServerIconDefault(
                 iconImage: Image("serverLogo"),
-                gradientColors: [.brandPrimary],
-                iconSize: 52
+                gradientColors: [.brandPrimary], foregroundColor: .white
             )
         }
     }

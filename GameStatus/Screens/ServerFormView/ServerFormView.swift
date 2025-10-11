@@ -45,7 +45,6 @@ struct ServerFormView: View {
                         ServerIconDefault(
                             iconImage: Image(viewModel.iconName),
                             gradientColors: [viewModel.bgColor],
-                            iconSize: 52,
                             foregroundColor: viewModel.fgColor,
                         )
                         .frame(width: 102, height: 102)
@@ -205,8 +204,6 @@ struct ServerFormView: View {
                                                 gradientColors: [
                                                     viewModel.bgColor
                                                 ],
-                                                iconSize: customServerIcons[idx]
-                                                    .size,
                                                 foregroundColor: viewModel
                                                     .fgColor
                                             )

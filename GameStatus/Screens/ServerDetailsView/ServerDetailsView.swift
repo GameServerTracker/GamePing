@@ -32,7 +32,6 @@ struct ServerDetailsView: View {
                             ServerIconDefault(
                                 iconImage: Image(server.iconName ?? "serverLogo"),
                                 gradientColors: [(server.iconBgColor != nil) ? Color(hex: server.iconBgColor!) : .brandPrimary],
-                                iconSize: 52,
                                 foregroundColor: (server.iconBgColor != nil) ? Color(hex: server.iconFgColor!) : .white
                             ).frame(width: 102, height: 102)
                         }
