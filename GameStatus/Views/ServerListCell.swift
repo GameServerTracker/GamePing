@@ -20,7 +20,7 @@ struct ServerListCell: View {
         HStack {
             HStack {
                 HStack {
-                    if response?.favicon != nil {
+                    if response?.favicon != nil && !server.serverIconIgnore {
                         ServerIconImage(base64Image: response?.favicon)
                     } else {
                         ServerIconDefault(

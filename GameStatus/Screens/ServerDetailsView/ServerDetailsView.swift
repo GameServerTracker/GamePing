@@ -25,7 +25,7 @@ struct ServerDetailsView: View {
             VStack(alignment: .leading) {
                 VStack {
                     HStack {
-                        if response?.favicon != nil {
+                        if response?.favicon != nil && !server.serverIconIgnore {
                             ServerIconImage(base64Image: response?.favicon)
                                 .frame(width: 102, height: 102)
                         } else {

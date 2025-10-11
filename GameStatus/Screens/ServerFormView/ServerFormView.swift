@@ -169,6 +169,16 @@ struct ServerFormView: View {
                         )
                         .keyboardType(.numberPad)
                     }
+                    if (viewModel.serverType == .fivem || viewModel.serverType == .minecraft) {
+                        HStack {
+                            Image(systemName: "photo")
+                                .frame(width: 20, height: 20)
+                            Toggle(
+                                "Ignore Server Icon",
+                                isOn: $viewModel.serverIconIgnore
+                            )
+                        }
+                    }
                 } header: {
                     Text("Server Info")
                 } footer: {

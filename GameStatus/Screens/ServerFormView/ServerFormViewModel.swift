@@ -20,6 +20,8 @@ final class ServerFormViewModel: ObservableObject {
     @Published var fgColor: Color = .white
     @Published var iconName: String  = "serverLogo"
     
+    @Published var serverIconIgnore: Bool = false
+    
     @Published var isIconEditedSheetPresented: Bool = false
     
     init(server: GameServer? = nil) {
@@ -32,6 +34,7 @@ final class ServerFormViewModel: ObservableObject {
             self.bgColor = (server.iconBgColor != nil) ? Color(hex: server.iconBgColor!) : .blue
             self.fgColor = (server.iconFgColor != nil) ? Color(hex: server.iconFgColor!) : .white
             self.iconName = server.iconName ?? "serverLogo"
+            self.serverIconIgnore = server.serverIconIgnore
         }
     }
     
@@ -48,6 +51,7 @@ final class ServerFormViewModel: ObservableObject {
             server!.iconBgColor = self.bgColor.hex
             server!.iconFgColor = self.fgColor.hex
             server!.iconName = self.iconName
+            server!.serverIconIgnore = self.serverIconIgnore
             return
         }
         let newServer: GameServer = GameServer(
@@ -58,7 +62,8 @@ final class ServerFormViewModel: ObservableObject {
             image: nil,
             iconBgColor: self.bgColor.hex,
             iconFgColor: self.fgColor.hex,
-            iconName: self.iconName
+            iconName: self.iconName,
+            serverIconIgnore: self.serverIconIgnore
         )
         context.insert(newServer)
     }
