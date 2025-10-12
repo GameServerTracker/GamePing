@@ -47,10 +47,9 @@ struct ServerFormView: View {
                             foregroundColor: viewModel.fgColor,
                         )
                         .frame(width: 102, height: 102)
-                        .padding(.top, 8)
                     }.buttonStyle(.plain)
                     Spacer()
-                }.listRowBackground(Color.clear).padding(.bottom, -15)
+                }.listRowBackground(Color.clear).padding(.bottom, -6)
                 Section {
                     HStack {
                         Image(systemName: "server.rack")
