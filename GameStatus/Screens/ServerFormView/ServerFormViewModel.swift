@@ -43,6 +43,10 @@ final class ServerFormViewModel: ObservableObject {
     }
     
     public func save(context: ModelContext) {
+        if let port = serverPort, !isValidPort(port) {
+            serverPort = nil
+        }
+        
         if (server != nil) {
             server!.name = self.serverName
             server!.address = self.serverAddress
@@ -67,4 +71,9 @@ final class ServerFormViewModel: ObservableObject {
         )
         context.insert(newServer)
     }
+    
+    private func isValidPort(_ port: Int) -> Bool {
+        return (port >= 0 && port <= 65535)
+    }
 }
+

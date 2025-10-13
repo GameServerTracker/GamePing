@@ -57,7 +57,7 @@ class ServerStatusManager: ObservableObject {
     private func fetchMinecraftStatus(for server: GameServer) async {
         let client = TCPClient(
             host: server.address,
-            port: UInt16(server.port),
+            port: UInt16(min(max(server.port, 0), 65535)),
         )
         self.clients[server.id] = client
         
@@ -103,7 +103,7 @@ class ServerStatusManager: ObservableObject {
     private func fetchBedrockStatus(for server: GameServer) async {
         let client = UDPClient(
             host: server.address,
-            port: UInt16(server.port),
+            port: UInt16(min(max(server.port, 0), 65535)),
             messageType: .MC_UNCONNECTED_PING
         )
         self.clients[server.id] = client
@@ -154,7 +154,7 @@ class ServerStatusManager: ObservableObject {
     private func fetchSourceStatus(for server: GameServer) async {
         let client = UDPClient(
             host: server.address,
-            port: UInt16(server.port),
+            port: UInt16(min(max(server.port, 0), 65535)),
             messageType: .A2S_INFO
         )
         self.clients[server.id] = client
