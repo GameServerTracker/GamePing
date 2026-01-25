@@ -21,6 +21,7 @@ struct ServerListView: View {
 
     @EnvironmentObject var statusManager: ServerStatusManager
     @Environment(\.modelContext) private var context
+
     @StateObject private var viewModel: ServerListViewModel = .init()
 
     var body: some View {
@@ -130,7 +131,8 @@ struct ServerListView: View {
                     }
                 }
             }
-        }.sheet(isPresented: $viewModel.showAddServerModal) {
+        }
+        .sheet(isPresented: $viewModel.showAddServerModal) {
             ServerFormView(
                 server: viewModel.selectedServer,
                 isShowing: $viewModel.showAddServerModal

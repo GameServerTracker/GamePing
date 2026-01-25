@@ -8,6 +8,11 @@
 import SwiftUI
 import SwiftData
 
+enum ServerSaveAction {
+    case add
+    case edit
+}
+
 final class ServerFormViewModel: ObservableObject {
     private let server: GameServer?
 
@@ -42,7 +47,7 @@ final class ServerFormViewModel: ObservableObject {
         return !serverName.isEmpty && !serverAddress.isEmpty
     }
     
-    public func save(context: ModelContext) {
+    public func save(context: ModelContext) -> ServerSaveAction {
         if let port = serverPort, !isValidPort(port) {
             serverPort = nil
         }
@@ -56,7 +61,7 @@ final class ServerFormViewModel: ObservableObject {
             server!.iconFgColor = self.fgColor.hex
             server!.iconName = self.iconName
             server!.serverIconIgnore = self.serverIconIgnore
-            return
+            return .edit
         }
         let newServer: GameServer = GameServer(
             name: self.serverName,
@@ -70,6 +75,7 @@ final class ServerFormViewModel: ObservableObject {
             serverIconIgnore: self.serverIconIgnore
         )
         context.insert(newServer)
+        return .add
     }
     
     private func isValidPort(_ port: Int) -> Bool {

@@ -7,6 +7,7 @@
 
 import SwiftData
 import SwiftUI
+import StoreKit
 
 struct ServerFormView: View {
 
@@ -14,6 +15,9 @@ struct ServerFormView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.colorScheme) var colorScheme
+    
+    @Environment(\.reviewManager) private var reviewManager
+    @Environment(\.requestReview) private var requestReview
 
     @StateObject var viewModel: ServerFormViewModel
     @FocusState private var focusedTextField: FormTextField?
@@ -287,8 +291,21 @@ struct ServerFormView: View {
                 ToolbarItem(placement: .primaryAction) {
                     if #available(iOS 26, *) {
                         Button {
-                            viewModel.save(context: context)
+                            let saveAction: ServerSaveAction = viewModel.save(context: context)
+                            var reviewCriteria: ReviewCriteria? = nil
                             isShowing = false
+                            
+                            switch saveAction {
+                            case .add:
+                                reviewCriteria = .addServer
+                                break
+                            case .edit:
+                                reviewCriteria = .editServer
+                                break
+                            }
+                            reviewManager.requestReviewIfNeeded(criteria: reviewCriteria!, requestReview: {
+                                requestReview()
+                            })
                         } label: {
                             Image(systemName: "checkmark")
                         }.disabled(!viewModel.isValid).tint(
@@ -296,8 +313,21 @@ struct ServerFormView: View {
                         )
                     } else {
                         Button {
-                            viewModel.save(context: context)
+                            let saveAction: ServerSaveAction = viewModel.save(context: context)
+                            var reviewCriteria: ReviewCriteria? = nil
                             isShowing = false
+                            
+                            switch saveAction {
+                            case .add:
+                                reviewCriteria = .addServer
+                                break
+                            case .edit:
+                                reviewCriteria = .editServer
+                                break
+                            }
+                            reviewManager.requestReviewIfNeeded(criteria: reviewCriteria!, requestReview: {
+                                requestReview()
+                            })
                         } label: {
                             Text("Save")
                         }.disabled(!viewModel.isValid)
