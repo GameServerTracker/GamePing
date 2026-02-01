@@ -60,6 +60,9 @@ struct PlayersFullRow: View {
             } else if let score = player.score {
                 Spacer()
                 scoreText(for: score)
+            } else if let ping = player.ping {
+                Spacer()
+                pingText(for: ping)
             }
         }
     }
@@ -76,6 +79,14 @@ struct PlayersFullRow: View {
     @ViewBuilder
     private func scoreText(for score: Int) -> some View {
         Text("Score: \(score)")
+            .font(.headline)
+            .foregroundStyle(.secondary)
+            .fontWeight(.regular)
+    }
+    
+    @ViewBuilder
+    private func pingText(for ping: Int) -> some View {
+        Text("\(ping) ms")
             .font(.headline)
             .foregroundStyle(.secondary)
             .fontWeight(.regular)
