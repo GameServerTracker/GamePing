@@ -169,9 +169,11 @@ extension Data {
     func extractJSONFromStatusPacket() -> String? {
         var offset = 0
 
-        _ = readVarInt(from: &offset)  // packet length
-        _ = readVarInt(from: &offset)  // packet ID
-
+        var len = readVarInt(from: &offset)  // packet length
+        print("Packet len: \(len) \(offset)")
+        var id = readVarInt(from: &offset)  // packet ID
+        print("Packet ID: \(id) \(offset)")
+        
         let jsonLength = readVarInt(from: &offset)
         guard offset + jsonLength <= count else { return nil }
 

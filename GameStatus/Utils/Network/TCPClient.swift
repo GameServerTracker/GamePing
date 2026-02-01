@@ -147,12 +147,12 @@ final class TCPClient: @unchecked Sendable {
 
         if self.bufferSize == 0 {
             var offset: Int = 0
-            let _ = self.receiveBuffer.readVarInt(from: &offset)
-            let _ = self.receiveBuffer.readVarInt(from: &offset)
+            let packetLength = self.receiveBuffer.readVarInt(from: &offset) // packet length
+            let packetId = self.receiveBuffer.readVarInt(from: &offset) // packet ID
             let jsonLength = self.receiveBuffer.readVarInt(from: &offset)
             self.bufferSize = jsonLength
             self.receiveBuffer.removeFirst(offset)
-            printLog("Size is \(self.bufferSize) / offset is \(offset)")
+            printLog("[PacketLength: \(packetLength)][PacketID: \(packetId)] Size is \(self.bufferSize) / offset is \(offset)")
 
             if self.ping == nil {
                 if let sent = self.sentPingTimestamp {
@@ -160,7 +160,8 @@ final class TCPClient: @unchecked Sendable {
                     self.ping = now - sent
                 }
             }
-        } else if self.receiveBuffer.count >= self.bufferSize {
+        }
+        if self.receiveBuffer.count >= self.bufferSize {
             let jsonData = self.receiveBuffer.prefix(self.bufferSize)
             if let jsonStr = String(data: jsonData, encoding: .utf8) {
                 DispatchQueue.main.async {
