@@ -50,7 +50,7 @@ struct ServerStatus {
     let online: Bool
     let playersOnline: Int?
     let playersMax: Int?
-    let players: [String]?
+    let players: [ServerPlayerInfo]?
     let name: String?
     let game: String?
     let motd: AttributedString?
@@ -60,6 +60,14 @@ struct ServerStatus {
     let favicon: String?
     let os: String?
     let keywords: [String]?
+}
+
+struct ServerPlayerInfo: Identifiable {
+    let id: UUID = UUID()
+    let name: String
+    let score: Int?
+    let duration: Int?
+    let ping: Int?
 }
 
 struct MockData {

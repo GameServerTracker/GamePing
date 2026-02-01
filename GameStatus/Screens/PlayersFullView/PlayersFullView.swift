@@ -13,42 +13,82 @@ struct PlayerRow: Identifiable {
 }
 
 struct PlayersFullView: View {
-    let players: [String]
+    let players: [ServerPlayerInfo]
     
     var body: some View {
         ZStack {
             Color(.background)
                 .edgesIgnoringSafeArea(.all)
             List {
-                ForEach(players.map { PlayerRow(name: $0) }) { playerRow in
-                    PlayersFullRow(player: playerRow.name)
+                ForEach(players) { playerRow in
+                    PlayersFullRow(player: playerRow)
                 }
             }
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .navigationTitle("Players (\(players.count))")
         }
-    }
+    }
 }
 
 struct PlayersFullRow: View {
-    let player: String
+    let player: ServerPlayerInfo
+    @State private var showScore = false
 
     var body: some View {
         HStack {
-            Image(systemName: (!player.isEmpty) ? "person.fill" : "person.wave.2.fill")
+            Image(systemName: (!player.name.isEmpty) ? "person.fill" : "person.wave.2.fill")
                 .imageScale(.large)
-            Text(!player.isEmpty ? player : "Trying to connect...")
+            Text(!player.name.isEmpty ? player.name : "Trying to connect...")
                 .font(.headline)
                 .fontWeight(.medium)
+            if let score = player.score, let duration = player.duration {
+                Spacer()
+                Group {
+                    if showScore {
+                        scoreText(for: score)
+                    } else {
+                        durationText(for: duration)
+                    }
+                }
+                .onTapGesture {
+                    showScore.toggle()
+                }
+            } else if let duration = player.duration {
+                Spacer()
+                durationText(for: duration)
+            } else if let score = player.score {
+                Spacer()
+                scoreText(for: score)
+            }
         }
+    }
+
+    @ViewBuilder
+    private func durationText(for duration: Int) -> some View {
+        let date = Date(timeIntervalSinceNow: TimeInterval(duration) * -1)
+        Text(date, format: .relative(presentation: .numeric, unitsStyle: .abbreviated))
+            .font(.headline)
+            .foregroundStyle(.secondary)
+            .fontWeight(.regular)
+    }
+    
+    @ViewBuilder
+    private func scoreText(for score: Int) -> some View {
+        Text("Score: \(score)")
+            .font(.headline)
+            .foregroundStyle(.secondary)
+            .fontWeight(.regular)
     }
 }
 
 #Preview {
     PlayersFullView(players: [
-        "BliTz_37", "Emperreur_Bonobo", "TheFantasio974", "batissdeurr",
-         "Emperreur_Bonobo7", "Emperreur_Bonobo6", "Emperreur_Bonobo5",
-         "Emperreur_Bonobo3", "tom_lafontaine", ""
+        .init(name: "BliTz_37", score: 42, duration: 2048, ping: 42),
+        .init(name: "Emperreur_Bonobo", score: 42, duration: 2048, ping: 42),
+        .init(name: "TheFantasio974", score: 42, duration: 2048, ping: 42),
+        .init(name: "batisseurr", score: 42, duration: 2048, ping: 42),
+        .init(name: "tom_lafontaine", score: 42, duration: 8000, ping: 42),
+        .init(name: "", score: 0, duration: 0, ping: 42),
      ])
 }

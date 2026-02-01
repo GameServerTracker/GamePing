@@ -246,7 +246,14 @@ class ServerStatusManager: ObservableObject {
             }
             return nil
         }()
-        let playersList = players.map { $0.map(\.name) } ?? []
+        let playersList: [ServerPlayerInfo] = players?.map {
+            ServerPlayerInfo(
+                name: $0.name,
+                score: nil,
+                duration: nil,
+                ping: $0.ping
+            )
+        } ?? []
         let status = ServerStatus(
             online: true,
             playersOnline: dynamic?.clients,
@@ -269,10 +276,18 @@ class ServerStatusManager: ObservableObject {
     private func getSourceResponse(info: SourceA2SInfo?, player: SourceA2SPlayer?, ping: UInt64?, serverId: UUID) {
         DispatchQueue.main.async {
             if let info = info {
-                let players = player?.players.map { $0.name } ?? []
+                let playersList: [ServerPlayerInfo] = player?.players.map {
+                    ServerPlayerInfo(
+                        name: $0.name,
+                        score: Int($0.score),
+                        duration: Int($0.duration),
+                        ping: nil
+                    )
+                } ?? []
+                
                 let serverPing = (ping != nil) ? Int(ping!) : nil
                 
-                self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: players, name: info.name, game: info.game, motd: nil, map: info.map, version: info.version, ping: serverPing, favicon: nil, os: String(info.os), keywords: info.keywords)
+                self.responses[serverId] = .init(online: true, playersOnline: Int(info.players), playersMax: Int(info.maxPlayers), players: playersList, name: info.name, game: info.game, motd: nil, map: info.map, version: info.version, ping: serverPing, favicon: nil, os: String(info.os), keywords: info.keywords)
             } else {
                 self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)
             }
@@ -290,9 +305,16 @@ class ServerStatusManager: ObservableObject {
                         from: info.data(using: .utf8)!
                     )
                     let serverPing = (ping != nil) ? Int(ping!) : nil
-                    let players: [String] = response.players.sample?.map { $0.name } ?? []
+                    let playersList: [ServerPlayerInfo] = response.players.sample?.map {
+                        ServerPlayerInfo(
+                            name: $0.name,
+                            score: nil,
+                            duration: nil,
+                            ping: nil
+                        )
+                    } ?? []
                     let motd = response.description.getAttributedString()
-                    self.responses[serverId] = .init(online: true, playersOnline: response.players.online, playersMax: response.players.max, players: players, name: nil, game: nil, motd: motd, map: nil, version: response.version.name, ping: serverPing, favicon: response.favicon, os: nil, keywords: nil)
+                    self.responses[serverId] = .init(online: true, playersOnline: response.players.online, playersMax: response.players.max, players: playersList, name: nil, game: nil, motd: motd, map: nil, version: response.version.name, ping: serverPing, favicon: response.favicon, os: nil, keywords: nil)
                 } catch {
                     print("Failed to decode response: \(error)")
                     self.responses[serverId] = .init(online: false, playersOnline: nil, playersMax: nil, players: nil, name: nil, game: nil, motd: nil, map: nil, version: nil, ping: nil, favicon: nil, os: nil, keywords: nil)

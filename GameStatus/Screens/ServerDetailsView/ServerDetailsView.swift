@@ -103,11 +103,11 @@ struct ServerDetailsView: View {
                     NavigationLink {
                         PlayersFullView(players: players)
                     } label: {
-                        PlayersListCard(players: players)
+                        PlayersListCard(players: response?.players?.map(\.name) ?? [])
                     }
                     .buttonStyle(.plain)
                 } else {
-                    PlayersListCard(players: response?.players ?? [])
+                    PlayersListCard(players: [])
                 }
                 if (response?.keywords?.isEmpty) != nil {
                     NavigationLink {
