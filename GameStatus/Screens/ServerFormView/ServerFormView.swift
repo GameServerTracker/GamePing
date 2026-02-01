@@ -70,6 +70,9 @@ struct ServerFormView: View {
                             $focusedTextField,
                             equals: FormTextField.hostname
                         )
+                        .onAppear {
+                            UITextField.appearance().clearButtonMode = .whileEditing
+                        }
                         .onSubmit {
                             let addressSplit = viewModel.serverAddress.split(
                                 separator: ":"
@@ -100,6 +103,7 @@ struct ServerFormView: View {
                                 }
                             }
                         }
+                        
                         .toolbar {
                             ToolbarItem(placement: .keyboard) {
                                 if focusedTextField == .hostname {
@@ -142,6 +146,9 @@ struct ServerFormView: View {
                         .focused($focusedTextField, equals: FormTextField.name)
                         .onSubmit { focusedTextField = nil }
                         .submitLabel(.continue)
+                        .onAppear {
+                            UITextField.appearance().clearButtonMode = .whileEditing
+                        }
                     }
                     HStack {
                         Image(systemName: "gamecontroller.fill")
@@ -171,8 +178,11 @@ struct ServerFormView: View {
                             format: .number
                         )
                         .keyboardType(.numberPad)
+                        .onAppear {
+                            UITextField.appearance().clearButtonMode = .whileEditing
+                        }
                     }
-                    if (viewModel.serverType == .fivem || viewModel.serverType == .minecraft) {
+                    if ([GameServerType.fivem,  GameServerType.minecraft].contains( viewModel.serverType)) {
                         HStack {
                             Image(systemName: "photo")
                                 .frame(width: 20, height: 20)
