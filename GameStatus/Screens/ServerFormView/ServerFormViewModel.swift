@@ -19,7 +19,7 @@ final class ServerFormViewModel: ObservableObject {
     @Published var serverName: String = ""
     @Published var serverAddress: String = ""
     @Published var serverPort: Int? = nil
-    @Published var serverType: GameServerType = .minecraft
+    @Published var serverType: GameServerType = .auto
     
     @Published var bgColor: Color = .blue
     @Published var fgColor: Color = .white

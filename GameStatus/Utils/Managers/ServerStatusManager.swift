@@ -14,12 +14,16 @@ class ServerStatusManager: ObservableObject {
     private var clients: [UUID: Sendable] = [:]
     private var inflightTasks: [UUID: Task<Void, Never>] = [:]
 
+    private struct ProtocolAttempt {
+        let type: GameServerType
+        let action: () async -> Void
+    }
+
     func getResponse(for server: GameServer) -> ServerStatus? {
         responses[server.id]
     }
 
     func fetchStatus(for server: GameServer) async {
-        // Coalesce concurrent fetches for the same server ID
         let id = server.id
         if let existing = inflightTasks[id] {
             print(
@@ -43,6 +47,8 @@ class ServerStatusManager: ObservableObject {
 
     private func performFetch(for server: GameServer) async {
         switch server.type {
+        case GameServerType.auto.rawValue:
+            await fetchAutomaticStatus(for: server)
         case GameServerType.source.rawValue:
             await fetchSourceStatus(for: server)
         case GameServerType.bedrock.rawValue:
@@ -54,6 +60,93 @@ class ServerStatusManager: ObservableObject {
         default:
             print("[\(server.name)][\(server.type)] Server type not supported")
         }
+    }
+
+    private func fetchAutomaticStatus(for server: GameServer) async {
+        print("[\(server.name)] Starting Auto-Mode detection...")
+
+        let fetchers: [ProtocolAttempt] = [
+            ProtocolAttempt(
+                type: .minecraft,
+                action: { await self.fetchMinecraftStatus(for: server) }
+            ),
+            ProtocolAttempt(
+                type: .bedrock,
+                action: { await self.fetchBedrockStatus(for: server) }
+            ),
+            ProtocolAttempt(
+                type: .source,
+                action: { await self.fetchSourceStatus(for: server) }
+            ),
+            ProtocolAttempt(
+                type: .fivem,
+                action: { await self.fetchFivemStatus(for: server) }
+            ),
+        ]
+
+        let sortedTasks = fetchers.sorted {
+            calculateAutoPriority(for: $0.type, server: server)
+                > calculateAutoPriority(for: $1.type, server: server)
+        }
+
+        print(
+            "[\(server.name)] Starting Auto-Mode with order: \(sortedTasks.map { $0.type })"
+        )
+        for sortedTask in sortedTasks {
+            await sortedTask.action()
+
+            if let status = responses[server.id], status.online {
+                print("[\(server.name)] server type detected as: \(sortedTask.type.rawValue), update server.type")
+                server.type = sortedTask.type.rawValue
+                
+                if (server.port == 0) {
+                    switch sortedTask.type {
+                    case .minecraft:
+                        server.port = 25565
+                    case .bedrock:
+                        server.port = 19132
+                    case .source:
+                        server.port = 27015
+                    case .fivem:
+                        server.port = 30125
+                    default: break
+                    }
+                }
+                return
+            } else {
+                responses[server.id] = nil
+            }
+        }
+        responses[server.id] = .offline
+        print("[\(server.name)] Could not determine server type")
+    }
+
+    private func calculateAutoPriority(
+        for type: GameServerType,
+        server: GameServer
+    ) -> Int {
+        var score: Int = 0
+        let port: Int = Int(server.port)
+        let name: String = server.name.lowercased()
+
+        switch type {
+        case .minecraft:
+            if port == 25565 { score += 100 }
+            if (25565...25600).contains(port) { score += 50 }
+            if name.contains("mc") { score += 50 }
+        case .bedrock:
+            if port == 19132 { score += 100 }
+            if name.contains("bedrock") { score += 50 }
+        case .source:
+            if [27015, 27016, 27050].contains(port) { score += 100 }
+        case .fivem:
+            if port == 30120 { score += 100 }
+            if name.contains("gta") || name.contains("red") { score += 50 }
+            if name.contains("rp") || name.contains("roleplay") { score += 20 }
+        default:
+            break
+        }
+        return score
     }
 
     private func fetchMinecraftStatus(for server: GameServer) async {
@@ -95,22 +188,35 @@ class ServerStatusManager: ObservableObject {
                 }
             }
         }
-        client.onReady = {
-            sendWithTimeout(.pong, timeout: 3) {
-                self.getMinecraftResponse(
-                    info: info,
-                    ping: ping,
-                    serverId: server.id
-                )
-                client.stop()
+        
+        await withCheckedContinuation { continuation in
+            var isResumed = false
+            let resumeTask = {
+                if !isResumed {
+                    isResumed = true
+                    continuation.resume()
+                }
             }
-        }
-        client.onFail = {
-            DispatchQueue.main.async {
-                self.responses[server.id] = .offline
+
+            client.onReady = {
+                sendWithTimeout(.pong, timeout: 3) {
+                    self.getMinecraftResponse(
+                        info: info,
+                        ping: ping,
+                        serverId: server.id
+                    )
+                    client.stop()
+                    resumeTask()
+                }
             }
+            client.onFail = {
+                DispatchQueue.main.async {
+                    self.responses[server.id] = .offline
+                }
+                resumeTask()
+            }
+            client.start()
         }
-        client.start()
     }
 
     private func fetchBedrockStatus(for server: GameServer) async {
@@ -157,22 +263,35 @@ class ServerStatusManager: ObservableObject {
                 }
             }
         }
-        client.onReady = {
-            sendWithTimeout(.MC_UNCONNECTED_PING, timeout: 3) {
-                self.getBedrockResponse(
-                    info: info,
-                    ping: ping,
-                    serverId: server.id
-                )
-                client.stop()
+        
+        await withCheckedContinuation { continuation in
+            var isResumed = false
+            let resumeTask = {
+                if !isResumed {
+                    isResumed = true
+                    continuation.resume()
+                }
             }
-        }
-        client.onFail = {
-            DispatchQueue.main.async {
-                self.responses[server.id] = .offline
+
+            client.onReady = {
+                sendWithTimeout(.MC_UNCONNECTED_PING, timeout: 3) {
+                    self.getBedrockResponse(
+                        info: info,
+                        ping: ping,
+                        serverId: server.id
+                    )
+                    client.stop()
+                    resumeTask()
+                }
             }
+            client.onFail = {
+                DispatchQueue.main.async {
+                    self.responses[server.id] = .offline
+                }
+                resumeTask()
+            }
+            client.start()
         }
-        client.start()
     }
 
     private func fetchSourceStatus(for server: GameServer) async {
@@ -188,7 +307,6 @@ class ServerStatusManager: ObservableObject {
 
         var info: SourceA2SInfo?
         var players: SourceA2SPlayer?
-        var gotA2sInfo: Bool = false
         var ping: UInt64? = nil
 
         func sendWithTimeout(
@@ -211,7 +329,6 @@ class ServerStatusManager: ObservableObject {
 
                 if type == .A2S_INFO {
                     ping = client.ping
-                    gotA2sInfo = true
                 }
 
                 switch response {
@@ -231,37 +348,50 @@ class ServerStatusManager: ObservableObject {
             }
         }
 
-        client.onReady = {
-            sendWithTimeout(.A2S_INFO, timeout: 3) {
-                if !gotA2sInfo {
-                    DispatchQueue.main.async {
+        await withCheckedContinuation { continuation in
+            var isResumed = false
+            let resumeTask = {
+                if !isResumed {
+                    isResumed = true
+                    continuation.resume()
+                }
+            }
+
+            client.onReady = {
+                sendWithTimeout(.A2S_INFO, timeout: 3) {
+                    guard info != nil else {
+                        DispatchQueue.main.async {
+                            self.getSourceResponse(
+                                info: nil,
+                                player: nil,
+                                ping: nil,
+                                serverId: server.id
+                            )
+                        }
+                        client.stop()
+                        resumeTask()
+                        return
+                    }
+                    sendWithTimeout(.A2S_PLAYER, timeout: 3) {
                         self.getSourceResponse(
-                            info: nil,
-                            player: nil,
-                            ping: nil,
+                            info: info,
+                            player: players,
+                            ping: ping,
                             serverId: server.id
                         )
+                        client.stop()
+                        resumeTask()
                     }
-                    client.stop()
-                    return
-                }
-                sendWithTimeout(.A2S_PLAYER, timeout: 3) {
-                    self.getSourceResponse(
-                        info: info,
-                        player: players,
-                        ping: ping,
-                        serverId: server.id
-                    )
-                    client.stop()
                 }
             }
-        }
-        client.onFail = {
-            DispatchQueue.main.async {
-                self.responses[server.id] = .offline
+            client.onFail = {
+                DispatchQueue.main.async {
+                    self.responses[server.id] = .offline
+                }
+                resumeTask()
             }
+            client.start()
         }
-        client.start()
     }
 
     private func fetchFivemStatus(for server: GameServer) async {
@@ -447,8 +577,13 @@ class ServerStatusManager: ObservableObject {
     }
 
     func fetchAllStatuses(for servers: [GameServer]) async {
-        for server in servers {
-            await fetchStatus(for: server)
+        let tasks = servers.map { server in
+            Task {
+                await self.fetchStatus(for: server)
+            }
+        }
+        for task in tasks {
+            await task.value
         }
     }
 }

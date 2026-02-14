@@ -10,6 +10,7 @@ enum GameServerType: String, CaseIterable, Identifiable, Codable {
     case bedrock = "mcb"
     case source = "source"
     case fivem = "fivem"
+    case auto = "auto"
     case unknown = "n/a"
     
     var id: Self { self }
@@ -20,6 +21,7 @@ let gameServerTypesDisplayName: [String: String] = [
     GameServerType.bedrock.rawValue: "Minecraft Bedrock",
     GameServerType.source.rawValue: "Source",
     GameServerType.fivem.rawValue: "FiveM",
+    GameStatus.GameServerType.auto.rawValue: "Automatic",
     GameServerType.unknown.rawValue: "Unknown",
 ];
 
