@@ -60,6 +60,24 @@ struct ServerStatus {
     let favicon: String?
     let os: String?
     let keywords: [String]?
+    
+    static var offline: Self {
+        return .init(
+            online: false,
+            playersOnline: nil,
+            playersMax: nil,
+            players: nil,
+            name: nil,
+            game: nil,
+            motd: nil,
+            map: nil,
+            version: nil,
+            ping: nil,
+            favicon: nil,
+            os: nil,
+            keywords: nil
+        )
+    }
 }
 
 struct ServerPlayerInfo: Identifiable {

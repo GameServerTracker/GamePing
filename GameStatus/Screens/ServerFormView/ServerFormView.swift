@@ -5,9 +5,9 @@
 //  Created by Tom on 15/06/2025.
 //
 
+import StoreKit
 import SwiftData
 import SwiftUI
-import StoreKit
 
 struct ServerFormView: View {
 
@@ -15,7 +15,7 @@ struct ServerFormView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.colorScheme) var colorScheme
-    
+
     @Environment(\.reviewManager) private var reviewManager
     @Environment(\.requestReview) private var requestReview
 
@@ -71,7 +71,8 @@ struct ServerFormView: View {
                             equals: FormTextField.hostname
                         )
                         .onAppear {
-                            UITextField.appearance().clearButtonMode = .whileEditing
+                            UITextField.appearance().clearButtonMode =
+                                .whileEditing
                         }
                         .onSubmit {
                             let addressSplit = viewModel.serverAddress.split(
@@ -103,7 +104,7 @@ struct ServerFormView: View {
                                 }
                             }
                         }
-                        
+
                         .toolbar {
                             ToolbarItem(placement: .keyboard) {
                                 if focusedTextField == .hostname {
@@ -147,7 +148,8 @@ struct ServerFormView: View {
                         .onSubmit { focusedTextField = nil }
                         .submitLabel(.continue)
                         .onAppear {
-                            UITextField.appearance().clearButtonMode = .whileEditing
+                            UITextField.appearance().clearButtonMode =
+                                .whileEditing
                         }
                     }
                     HStack {
@@ -156,6 +158,7 @@ struct ServerFormView: View {
                             .scaledToFit()
                             .frame(width: 20, height: 20)
                         Picker("Type", selection: $viewModel.serverType) {
+                            Text("Automatic").tag(GameServerType.auto)
                             Text("Minecraft Java Edition").tag(
                                 GameServerType.minecraft
                             )
@@ -179,10 +182,13 @@ struct ServerFormView: View {
                         )
                         .keyboardType(.numberPad)
                         .onAppear {
-                            UITextField.appearance().clearButtonMode = .whileEditing
+                            UITextField.appearance().clearButtonMode =
+                                .whileEditing
                         }
                     }
-                    if ([GameServerType.fivem,  GameServerType.minecraft].contains( viewModel.serverType)) {
+                    if [GameServerType.fivem, GameServerType.minecraft]
+                        .contains(viewModel.serverType)
+                    {
                         HStack {
                             Image(systemName: "photo")
                                 .frame(width: 20, height: 20)
@@ -301,10 +307,12 @@ struct ServerFormView: View {
                 ToolbarItem(placement: .primaryAction) {
                     if #available(iOS 26, *) {
                         Button {
-                            let saveAction: ServerSaveAction = viewModel.save(context: context)
+                            let saveAction: ServerSaveAction = viewModel.save(
+                                context: context
+                            )
                             var reviewCriteria: ReviewCriteria? = nil
                             isShowing = false
-                            
+
                             switch saveAction {
                             case .add:
                                 reviewCriteria = .addServer
@@ -313,9 +321,12 @@ struct ServerFormView: View {
                                 reviewCriteria = .editServer
                                 break
                             }
-                            reviewManager.requestReviewIfNeeded(criteria: reviewCriteria!, requestReview: {
-                                requestReview()
-                            })
+                            reviewManager.requestReviewIfNeeded(
+                                criteria: reviewCriteria!,
+                                requestReview: {
+                                    requestReview()
+                                }
+                            )
                         } label: {
                             Image(systemName: "checkmark")
                         }.disabled(!viewModel.isValid).tint(
@@ -323,10 +334,12 @@ struct ServerFormView: View {
                         )
                     } else {
                         Button {
-                            let saveAction: ServerSaveAction = viewModel.save(context: context)
+                            let saveAction: ServerSaveAction = viewModel.save(
+                                context: context
+                            )
                             var reviewCriteria: ReviewCriteria? = nil
                             isShowing = false
-                            
+
                             switch saveAction {
                             case .add:
                                 reviewCriteria = .addServer
@@ -335,9 +348,12 @@ struct ServerFormView: View {
                                 reviewCriteria = .editServer
                                 break
                             }
-                            reviewManager.requestReviewIfNeeded(criteria: reviewCriteria!, requestReview: {
-                                requestReview()
-                            })
+                            reviewManager.requestReviewIfNeeded(
+                                criteria: reviewCriteria!,
+                                requestReview: {
+                                    requestReview()
+                                }
+                            )
                         } label: {
                             Text("Save")
                         }.disabled(!viewModel.isValid)
