@@ -11,7 +11,7 @@ enum GameServerType: String, CaseIterable, Identifiable, Codable {
     case source = "source"
     case fivem = "fivem"
     case auto = "auto"
-    case unknown = "n/a"
+    case unknown = "unknown"
     
     var id: Self { self }
 }
@@ -31,6 +31,7 @@ let gameServerTypesIconName: [String: String] = [
     GameServerType.source.rawValue: "source_icon",
     GameServerType.fivem.rawValue: "fivem",
     GameServerType.unknown.rawValue: "questionmark.circle.fill",
+    GameServerType.auto.rawValue: "sparkles",
 ];
 
 let gameServerOsTypesIconName: [String: String] = [
