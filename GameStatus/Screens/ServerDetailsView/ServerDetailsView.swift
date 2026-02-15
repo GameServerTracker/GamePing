@@ -25,15 +25,19 @@ struct ServerDetailsView: View {
             VStack(alignment: .leading) {
                 VStack {
                     HStack {
-                        if response?.favicon != nil && !server.serverIconIgnore {
-                            ServerIconImage(base64Image: response?.favicon)
-                                .frame(width: 102, height: 102)
-                        } else {
-                            ServerIconDefault(
-                                iconImage: Image(server.iconName ?? "serverLogo"),
-                                gradientColors: [(server.iconBgColor != nil) ? Color(hex: server.iconBgColor!) : .brandPrimary],
-                                foregroundColor: (server.iconBgColor != nil) ? Color(hex: server.iconFgColor!) : .white
-                            ).frame(width: 102, height: 102)
+                        Button {
+                            showEditServerModal = true
+                        } label: {
+                            if response?.favicon != nil && !server.serverIconIgnore {
+                                ServerIconImage(base64Image: response?.favicon)
+                                    .frame(width: 102, height: 102)
+                            } else {
+                                ServerIconDefault(
+                                    iconImage: Image(server.iconName ?? "serverLogo"),
+                                    gradientColors: [(server.iconBgColor != nil) ? Color(hex: server.iconBgColor!) : .brandPrimary],
+                                    foregroundColor: (server.iconBgColor != nil) ? Color(hex: server.iconFgColor!) : .white
+                                ).frame(width: 102, height: 102)
+                            }
                         }
                         VStack(alignment: .leading) {
                             Text(server.name)

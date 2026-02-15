@@ -8,7 +8,6 @@
 import Foundation
 
 @MainActor
-
 class ServerStatusManager: ObservableObject {
     @Published var responses: [UUID: ServerStatus] = [:]
     private var clients: [UUID: Sendable] = [:]
