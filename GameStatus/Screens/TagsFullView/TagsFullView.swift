@@ -41,6 +41,7 @@ struct TagsFullRow: View {
             Text(tag)
                 .font(.headline)
                 .fontWeight(.medium)
+                .textSelection(.enabled)
         }
     }
 }

@@ -99,6 +99,7 @@ struct ServerDetailsView: View {
                         .font(.headline)
                         .foregroundColor(.primary)
                         .frame(maxWidth: .infinity, alignment: .center)
+                        .textSelection(.enabled)
                 }
                 if response?.motd != nil {
                     MotdCard(motd: (response?.motd)!)

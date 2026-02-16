@@ -15,6 +15,7 @@ struct MotdCard: View {
         if #available(iOS 26.0, *) {
             VStack(alignment: .center, spacing: 8) {
                 Text(motd)
+                    .textSelection(.enabled)
             }
             .padding(.horizontal)
             .glassEffect(
@@ -29,6 +30,7 @@ struct MotdCard: View {
         } else {
             VStack(alignment: .center, spacing: 8) {
                 Text(motd)
+                    .textSelection(.enabled)
             }
             .padding(.horizontal)
             .background(

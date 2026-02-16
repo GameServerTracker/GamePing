@@ -42,6 +42,7 @@ struct PlayersFullRow: View {
             Text(!player.name.isEmpty ? player.name : "Trying to connect...")
                 .font(.headline)
                 .fontWeight(.medium)
+                .textSelection(.enabled)
             if let score = player.score, let duration = player.duration {
                 Spacer()
                 Group {
