@@ -172,19 +172,23 @@ struct ServerFormView: View {
                             Text("FiveM CTX Code").tag(GameServerType.fivemctx)
                         }
                     }
-                    HStack {
-                        Image(systemName: "number")
-                            .resizable()
-                            .frame(width: 20, height: 20)
-                        TextField(
-                            "Port (Optional)",
-                            value: $viewModel.serverPort,
-                            format: .number
-                        )
-                        .keyboardType(.numberPad)
-                        .onAppear {
-                            UITextField.appearance().clearButtonMode =
-                                .whileEditing
+                    if ![GameServerType.fivemctx]
+                        .contains(viewModel.serverType)
+                    {
+                        HStack {
+                            Image(systemName: "number")
+                                .resizable()
+                                .frame(width: 20, height: 20)
+                            TextField(
+                                "Port (Optional)",
+                                value: $viewModel.serverPort,
+                                format: .number
+                            )
+                            .keyboardType(.numberPad)
+                            .onAppear {
+                                UITextField.appearance().clearButtonMode =
+                                    .whileEditing
+                            }
                         }
                     }
                     if [GameServerType.fivem, GameServerType.minecraft]
@@ -317,10 +321,8 @@ struct ServerFormView: View {
                             switch saveAction {
                             case .add:
                                 reviewCriteria = .addServer
-                                break
                             case .edit:
                                 reviewCriteria = .editServer
-                                break
                             }
                             reviewManager.requestReviewIfNeeded(
                                 criteria: reviewCriteria!,
@@ -344,10 +346,8 @@ struct ServerFormView: View {
                             switch saveAction {
                             case .add:
                                 reviewCriteria = .addServer
-                                break
                             case .edit:
                                 reviewCriteria = .editServer
-                                break
                             }
                             reviewManager.requestReviewIfNeeded(
                                 criteria: reviewCriteria!,
@@ -361,16 +361,12 @@ struct ServerFormView: View {
                     }
                 }
                 ToolbarItem(placement: .cancellationAction) {
-                    if #available(iOS 26, *) {
-                        Button {
-                            isShowing = false
-                        } label: {
+                    Button {
+                        isShowing = false
+                    } label: {
+                        if #available(iOS 26, *) {
                             Image(systemName: "xmark")
-                        }
-                    } else {
-                        Button {
-                            isShowing = false
-                        } label: {
+                        } else {
                             Text("Cancel")
                         }
                     }

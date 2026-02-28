@@ -44,7 +44,7 @@ struct ServerDetailsView: View {
                                 .font(.title3)
                                 .fontWeight(.bold)
                                 .lineLimit(2)
-                            Text("\(server.address):\(String(server.port))")
+                            Text(server.getAddress())
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
@@ -138,8 +138,7 @@ struct ServerDetailsView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
                     Button {
-                        UIPasteboard.general.string =
-                            "\(server.address):\(String(server.port))"
+                        UIPasteboard.general.string = server.getAddress()
                     } label: {
                         Label(
                             "Copy Address",

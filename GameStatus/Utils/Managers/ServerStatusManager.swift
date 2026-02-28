@@ -86,6 +86,10 @@ class ServerStatusManager {
                 type: .fivem,
                 action: { await self.fetchFivemStatus(for: server) }
             ),
+            ProtocolAttempt(
+                type: .fivemctx,
+                action: { await self.fetchFivemCtxStatus(for: server) }
+            )
         ]
 
         let sortedTasks = fetchers.sorted {
@@ -131,22 +135,24 @@ class ServerStatusManager {
     ) -> Int {
         var score: Int = 0
         let port: Int = Int(server.port)
-        let name: String = server.name.lowercased()
+        let address: String = server.address.lowercased()
 
         switch type {
         case .minecraft:
             if port == 25565 { score += 100 }
             if (25565...25600).contains(port) { score += 50 }
-            if name.contains("mc") { score += 50 }
+            if address.contains("mc") { score += 50 }
         case .bedrock:
             if port == 19132 { score += 100 }
-            if name.contains("bedrock") { score += 50 }
+            if address.contains("bedrock") { score += 50 }
         case .source:
             if [27015, 27016, 27050].contains(port) { score += 100 }
         case .fivem:
             if port == 30120 { score += 100 }
-            if name.contains("gta") || name.contains("red") { score += 50 }
-            if name.contains("rp") || name.contains("roleplay") { score += 20 }
+            if address.contains("gta") || address.contains("red") { score += 50 }
+            if address.contains("rp") || address.contains("roleplay") { score += 20 }
+        case .fivemctx:
+            if address.count == 6 { score += 100 }
         default:
             break
         }
@@ -445,6 +451,32 @@ class ServerStatusManager {
             }
             return nil
         }()
+        let os: String? = {
+            if let version = info?.server {
+                if version.contains("win32") {
+                    "w"
+                } else if version.contains("linux") {
+                    "l"
+                } else {
+                    nil
+                }
+            } else {
+                nil
+            }
+        }()
+        let version: String? = {
+            if let rawVersion = info?.server {
+                if rawVersion.contains("win32") {
+                    return rawVersion.replacingOccurrences(of: " win32", with: "")
+                } else if rawVersion.contains("linux") {
+                    return rawVersion.replacingOccurrences(of: " linux", with: "")
+                } else {
+                    return rawVersion
+                }
+            } else {
+                return nil
+            }
+        }()
         let playersList: [ServerPlayerInfo] =
             players?.map {
                 ServerPlayerInfo(
@@ -463,10 +495,10 @@ class ServerStatusManager {
             game: dynamic?.gametype,
             motd: nil,
             map: dynamic?.mapname,
-            version: info?.server,
+            version: version,
             ping: nil,
             favicon: info?.icon,
-            os: nil,
+            os: os,
             keywords: keywords,
         )
         print(status)
@@ -484,6 +516,25 @@ class ServerStatusManager {
                 return nil
             }()
             let image: String? = await NetworkManager.getFivemFavicons(code: server.address, version: info.data.iconVersion)
+            let os: String? = {
+                if info.data.server.contains("win32") {
+                    "w"
+                } else if info.data.server.contains("linux") {
+                    "l"
+                } else {
+                    nil
+                }
+            }()
+            let version: String = {
+                var versionString = info.data.server
+                if versionString.contains("win32") {
+                    versionString = versionString.replacingOccurrences(of: " win32", with: "")
+                } else if versionString.contains("linux") {
+                    versionString = versionString.replacingOccurrences(of: " linux", with: "")
+                }
+                return versionString
+            }()
+
             self.responses[server.id] = .init(
                 online: true,
                 playersOnline: info.data.clients,
@@ -500,10 +551,10 @@ class ServerStatusManager {
                 game: info.data.gametype,
                 motd: nil,
                 map: info.data.mapname,
-                version: info.data.server,
+                version: version,
                 ping: nil,
                 favicon: image,
-                os: nil,
+                os: os,
                 keywords: keywords
             )
         } else {

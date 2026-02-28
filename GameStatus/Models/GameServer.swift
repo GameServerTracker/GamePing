@@ -44,6 +44,13 @@ class GameServer {
         self.iconName = iconName
         self.serverIconIgnore = serverIconIgnore
     }
+    
+    public func getAddress() -> String {
+        if type == GameServerType.fivemctx.rawValue {
+            return address
+        }
+        return "\(address):\(port)"
+    }
 }
 
 struct ServerStatus {
