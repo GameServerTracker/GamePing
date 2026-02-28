@@ -67,6 +67,65 @@ struct FivemInfoResponse: Codable {
     }
 }
 
+struct FivemCtxResponse: Codable {
+    let endPoint: String
+    let data: ServerData
+
+    enum CodingKeys: String, CodingKey {
+        case endPoint = "EndPoint"
+        case data = "Data"
+    }
+
+    struct ServerData: Codable {
+        let clients: Int
+        let gametype: String
+        let hostname: String
+        let mapname: String
+        let svMaxclients: Int
+        let resources: [String]
+        let server: String
+        let vars: ServerVars
+        let selfReportedClients: Int
+        let players: [Player]
+        let iconVersion: Int
+
+        enum CodingKeys: String, CodingKey {
+            case clients, gametype, hostname, mapname, resources, server, vars, players, iconVersion
+            case svMaxclients = "sv_maxclients"
+            case selfReportedClients = "selfReportedClients"
+        }
+    }
+
+    struct ServerVars: Codable {
+        let activitypubFeed: String?
+        let bannerConnecting: String?
+        let bannerDetail: String?
+        let discord: String?
+        let locale: String?
+        let svProjectDesc: String?
+        let svProjectName: String?
+        let tags: String?
+        let svPoolSizesIncrease: String?
+
+        enum CodingKeys: String, CodingKey {
+            case activitypubFeed, discord, locale, tags
+            case bannerConnecting = "banner_connecting"
+            case bannerDetail = "banner_detail"
+            case svProjectDesc = "sv_projectDesc"
+            case svProjectName = "sv_projectName"
+            case svPoolSizesIncrease = "sv_poolSizesIncrease"
+        }
+    }
+
+    struct Player: Codable, Identifiable {
+        let endpoint: String
+        let id: Int
+        let name: String
+        let ping: Int
+        let identifiers: [String]
+    }
+}
+
 struct FivemDynamicResponse: Codable {
     let clients: Int?
     let gametype: String?

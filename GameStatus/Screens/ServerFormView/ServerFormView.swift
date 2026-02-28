@@ -169,6 +169,7 @@ struct ServerFormView: View {
                                 GameServerType.source
                             )
                             Text("FiveM / RedM").tag(GameServerType.fivem)
+                            Text("FiveM CTX Code").tag(GameServerType.fivemctx)
                         }
                     }
                     HStack {

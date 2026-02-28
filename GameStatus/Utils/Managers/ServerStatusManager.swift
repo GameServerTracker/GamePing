@@ -56,8 +56,11 @@ class ServerStatusManager: ObservableObject {
             await fetchMinecraftStatus(for: server)
         case GameServerType.fivem.rawValue:
             await fetchFivemStatus(for: server)
+        case GameServerType.fivemctx.rawValue:
+            await fetchFivemCtxStatus(for: server)
         default:
             print("[\(server.name)][\(server.type)] Server type not supported")
+            responses[server.id] = .offline
         }
     }
 
@@ -453,6 +456,44 @@ class ServerStatusManager: ObservableObject {
         )
         print(status)
         self.responses[server.id] = status
+    }
+    
+    private func fetchFivemCtxStatus(for server: GameServer) async {
+        let info: FivemCtxResponse? = await NetworkManager.fetchFiveMCtx(code: server.address)
+        
+        if let info {
+            let keywords: [String]? = {
+                if let tags = info.data.vars.tags {
+                    return tags.components(separatedBy: ", ")
+                }
+                return nil
+            }()
+            let image: String? = await NetworkManager.getFivemFavicons(code: server.address, version: info.data.iconVersion)
+            self.responses[server.id] = .init(
+                online: true,
+                playersOnline: info.data.clients,
+                playersMax: info.data.svMaxclients,
+                players: info.data.players.map {
+                    ServerPlayerInfo(
+                        name: $0.name,
+                        score: nil,
+                        duration: nil,
+                        ping: $0.ping
+                    )
+                },
+                name: info.data.hostname,
+                game: info.data.gametype,
+                motd: nil,
+                map: info.data.mapname,
+                version: info.data.server,
+                ping: nil,
+                favicon: image,
+                os: nil,
+                keywords: keywords
+            )
+        } else {
+            self.responses[server.id] = .offline
+        }
     }
 
     private func getSourceResponse(
