@@ -25,7 +25,7 @@ struct ReviewManager {
     func requestReviewIfNeeded(criteria: ReviewCriteria, requestReview: @escaping () -> Void) {
         let defaults = UserDefaults.standard
 
-        if defaults.bool(forKey: "hasReviewed") {
+        if defaults.bool(forKey: hasReviewedKey) {
             return;
         }
         
