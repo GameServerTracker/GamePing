@@ -67,7 +67,6 @@ final class UDPClient: @unchecked Sendable {
                     self.receiveNext()
                 }
                 self.onReady?()
-                break
             case .waiting(let error):
                 switch error {
                 case .dns(let dnsError):
@@ -85,16 +84,14 @@ final class UDPClient: @unchecked Sendable {
                 self.printLog("Client failed: \(error)")
                 self.stop()
                 self.onFail?()
-                break
             case .cancelled:
                 self.printLog("Connection cancelled")
             default:
                 self.printLog("Client state: \(state)")
-                break
             }
         }
         connection.start(queue: queue)
-        print("Client Started")
+        printLog("Client Started")
     }
 
     func stop() {
@@ -105,7 +102,7 @@ final class UDPClient: @unchecked Sendable {
     }
 
     func clear() {
-        splitAssemblies.removeAll()
+        queue.async { self.splitAssemblies.removeAll() }
     }
 
     public func setMessageType(_ type: QueryRequestType) {
@@ -140,10 +137,8 @@ final class UDPClient: @unchecked Sendable {
     private func receiveNext() {
         self.printLog("[\(self.address):\(self.port)] Wait for message...")
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65535) {
-            data,
-            _,
-            isComplete,
-            error in
+            [weak self] data, _, isComplete, error in
+            guard let self = self else { return }
             if let data = data {
                 self.printLog("isComplete: \(isComplete)")
                 self.handleReceivedData(data)
@@ -176,24 +171,20 @@ final class UDPClient: @unchecked Sendable {
         switch result {
         case .info(let info):
             printLog("Info received: \(info)")
-            DispatchQueue.main.async { self.onResponse?(result!) }
-            break
+            DispatchQueue.main.async { self.onResponse?(.info(info)) }
         case .player(let player):
-            print("Players online: \(player.players.count)")
-            DispatchQueue.main.async { self.onResponse?(result!) }
-            break
+            printLog("Players online: \(player.players.count)")
+            DispatchQueue.main.async { self.onResponse?(.player(player)) }
         case .rules(let rules):
             printLog("Rules: \(rules.rulesLength)")
-            DispatchQueue.main.async { self.onResponse?(result!) }
-            break
+            DispatchQueue.main.async { self.onResponse?(.rules(rules)) }
         case .challenge:
             printLog("Challenge received...")
         case .mcUnconnectedPong(let info):
             printLog("MC Data: \(info)")
-            DispatchQueue.main.async { self.onResponse?(result!) }
-            break
+            DispatchQueue.main.async { self.onResponse?(.mcUnconnectedPong(info)) }
         default:
-            printLog("Nothings received...")
+            printLog("Nothing received...")
         }
     }
 
@@ -208,19 +199,16 @@ final class UDPClient: @unchecked Sendable {
             packet.append("Source Engine Query".data(using: .utf8)!)
             packet.append(0x00)
             packet.append(contentsOf: challenge ?? Data([]))
-            break
         case .A2S_PLAYER:
             packet.append(0x55)
             packet.append(
                 contentsOf: challenge ?? Data([0xFF, 0xFF, 0xFF, 0xFF])
             )
-            break
         case .A2S_RULES:
             packet.append(0x56)
             packet.append(
                 contentsOf: challenge ?? Data([0xFF, 0xFF, 0xFF, 0xFF])
             )
-            break
         // MC
         case .MC_UNCONNECTED_PING:
             var clientAliveTime: UInt64 = 5000

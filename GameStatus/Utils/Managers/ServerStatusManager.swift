@@ -202,20 +202,24 @@ class ServerStatusManager: ObservableObject {
 
             client.onReady = {
                 sendWithTimeout(.pong, timeout: 3) {
-                    self.getMinecraftResponse(
-                        info: info,
-                        ping: ping,
-                        serverId: server.id
-                    )
-                    client.stop()
-                    resumeTask()
+                    DispatchQueue.main.async {
+                        self.getMinecraftResponse(
+                            info: info,
+                            ping: ping,
+                            serverId: server.id
+                        )
+                        client.stop()
+                        self.clients[server.id] = nil
+                        resumeTask()
+                    }
                 }
             }
             client.onFail = {
                 DispatchQueue.main.async {
                     self.responses[server.id] = .offline
+                    self.clients[server.id] = nil
+                    resumeTask()
                 }
-                resumeTask()
             }
             client.start()
         }
@@ -277,20 +281,24 @@ class ServerStatusManager: ObservableObject {
 
             client.onReady = {
                 sendWithTimeout(.MC_UNCONNECTED_PING, timeout: 3) {
-                    self.getBedrockResponse(
-                        info: info,
-                        ping: ping,
-                        serverId: server.id
-                    )
-                    client.stop()
-                    resumeTask()
+                    DispatchQueue.main.async {
+                        self.getBedrockResponse(
+                            info: info,
+                            ping: ping,
+                            serverId: server.id
+                        )
+                        client.stop()
+                        self.clients[server.id] = nil
+                        resumeTask()
+                    }
                 }
             }
             client.onFail = {
                 DispatchQueue.main.async {
                     self.responses[server.id] = .offline
+                    self.clients[server.id] = nil
+                    resumeTask()
                 }
-                resumeTask()
             }
             client.start()
         }
@@ -369,28 +377,33 @@ class ServerStatusManager: ObservableObject {
                                 ping: nil,
                                 serverId: server.id
                             )
+                            client.stop()
+                            self.clients[server.id] = nil
+                            resumeTask()
                         }
-                        client.stop()
-                        resumeTask()
                         return
                     }
                     sendWithTimeout(.A2S_PLAYER, timeout: 3) {
-                        self.getSourceResponse(
-                            info: info,
-                            player: players,
-                            ping: ping,
-                            serverId: server.id
-                        )
-                        client.stop()
-                        resumeTask()
+                        DispatchQueue.main.async {
+                            self.getSourceResponse(
+                                info: info,
+                                player: players,
+                                ping: ping,
+                                serverId: server.id
+                            )
+                            client.stop()
+                            self.clients[server.id] = nil
+                            resumeTask()
+                        }
                     }
                 }
             }
             client.onFail = {
                 DispatchQueue.main.async {
                     self.responses[server.id] = .offline
+                    self.clients[server.id] = nil
+                    resumeTask()
                 }
-                resumeTask()
             }
             client.start()
         }
@@ -502,38 +515,36 @@ class ServerStatusManager: ObservableObject {
         ping: UInt64?,
         serverId: UUID
     ) {
-        DispatchQueue.main.async {
-            if let info = info {
-                let playersList: [ServerPlayerInfo] =
-                    player?.players.map {
-                        ServerPlayerInfo(
-                            name: $0.name,
-                            score: Int($0.score),
-                            duration: Int($0.duration),
-                            ping: nil
-                        )
-                    } ?? []
+        if let info = info {
+            let playersList: [ServerPlayerInfo] =
+                player?.players.map {
+                    ServerPlayerInfo(
+                        name: $0.name,
+                        score: Int($0.score),
+                        duration: Int($0.duration),
+                        ping: nil
+                    )
+                } ?? []
 
-                let serverPing = (ping != nil) ? Int(ping!) : nil
+            let serverPing = ping.map { Int($0) }
 
-                self.responses[serverId] = .init(
-                    online: true,
-                    playersOnline: Int(info.players),
-                    playersMax: Int(info.maxPlayers),
-                    players: playersList,
-                    name: info.name,
-                    game: info.game,
-                    motd: nil,
-                    map: info.map,
-                    version: info.version,
-                    ping: serverPing,
-                    favicon: nil,
-                    os: String(info.os),
-                    keywords: info.keywords
-                )
-            } else {
-                self.responses[serverId] = .offline
-            }
+            self.responses[serverId] = .init(
+                online: true,
+                playersOnline: Int(info.players),
+                playersMax: Int(info.maxPlayers),
+                players: playersList,
+                name: info.name,
+                game: info.game,
+                motd: nil,
+                map: info.map,
+                version: info.version,
+                ping: serverPing,
+                favicon: nil,
+                os: String(info.os),
+                keywords: info.keywords
+            )
+        } else {
+            self.responses[serverId] = .offline
         }
     }
 
@@ -542,48 +553,46 @@ class ServerStatusManager: ObservableObject {
         ping: UInt64?,
         serverId: UUID
     ) {
-        DispatchQueue.main.async {
-            if let info = info {
-                print(info)
-                do {
-                    let decoder = JSONDecoder()
-                    let response = try decoder.decode(
-                        MinecraftPong.self,
-                        from: info.data(using: .utf8)!
-                    )
-                    let serverPing = (ping != nil) ? Int(ping!) : nil
-                    let playersList: [ServerPlayerInfo] =
-                        response.players.sample?.map {
-                            ServerPlayerInfo(
-                                name: $0.name,
-                                score: nil,
-                                duration: nil,
-                                ping: nil
-                            )
-                        } ?? []
-                    let motd = response.description.getAttributedString()
-                    self.responses[serverId] = .init(
-                        online: true,
-                        playersOnline: response.players.online,
-                        playersMax: response.players.max,
-                        players: playersList,
-                        name: nil,
-                        game: nil,
-                        motd: motd,
-                        map: nil,
-                        version: response.version.name,
-                        ping: serverPing,
-                        favicon: response.favicon,
-                        os: nil,
-                        keywords: nil
-                    )
-                } catch {
-                    print("Failed to decode response: \(error)")
-                    self.responses[serverId] = .offline
-                }
-            } else {
+        if let info = info {
+            print(info)
+            do {
+                let decoder = JSONDecoder()
+                let response = try decoder.decode(
+                    MinecraftPong.self,
+                    from: info.data(using: .utf8)!
+                )
+                let serverPing = ping.map { Int($0) }
+                let playersList: [ServerPlayerInfo] =
+                    response.players.sample?.map {
+                        ServerPlayerInfo(
+                            name: $0.name,
+                            score: nil,
+                            duration: nil,
+                            ping: nil
+                        )
+                    } ?? []
+                let motd = response.description.getAttributedString()
+                self.responses[serverId] = .init(
+                    online: true,
+                    playersOnline: response.players.online,
+                    playersMax: response.players.max,
+                    players: playersList,
+                    name: nil,
+                    game: nil,
+                    motd: motd,
+                    map: nil,
+                    version: response.version.name,
+                    ping: serverPing,
+                    favicon: response.favicon,
+                    os: nil,
+                    keywords: nil
+                )
+            } catch {
+                print("Failed to decode response: \(error)")
                 self.responses[serverId] = .offline
             }
+        } else {
+            self.responses[serverId] = .offline
         }
     }
 
@@ -592,38 +601,40 @@ class ServerStatusManager: ObservableObject {
         ping: UInt64?,
         serverId: UUID
     ) {
-        DispatchQueue.main.async {
-            if let info = info {
-                let serverPing = (ping != nil) ? Int(ping!) : nil
-                self.responses[serverId] = .init(
-                    online: true,
-                    playersOnline: Int(info.players),
-                    playersMax: Int(info.maxPlayers),
-                    players: nil,
-                    name: nil,
-                    game: info.gamemode,
-                    motd: MinecraftMotd.renderString(info.motd),
-                    map: nil,
-                    version: info.version.name,
-                    ping: serverPing,
-                    favicon: nil,
-                    os: nil,
-                    keywords: nil
-                )
-            } else {
-                self.responses[serverId] = .offline
-            }
+        if let info = info {
+            let serverPing = ping.map { Int($0) }
+            self.responses[serverId] = .init(
+                online: true,
+                playersOnline: Int(info.players),
+                playersMax: Int(info.maxPlayers),
+                players: nil,
+                name: nil,
+                game: info.gamemode,
+                motd: MinecraftMotd.renderString(info.motd),
+                map: nil,
+                version: info.version.name,
+                ping: serverPing,
+                favicon: nil,
+                os: nil,
+                keywords: nil
+            )
+        } else {
+            self.responses[serverId] = .offline
         }
     }
 
     func fetchAllStatuses(for servers: [GameServer]) async {
-        let tasks = servers.map { server in
-            Task {
-                await self.fetchStatus(for: server)
+        let maxConcurrent = 10
+        await withTaskGroup(of: Void.self) { group in
+            for (index, server) in servers.enumerated() {
+                if index >= maxConcurrent {
+                    await group.next()
+                }
+                group.addTask {
+                    await self.fetchStatus(for: server)
+                }
             }
-        }
-        for task in tasks {
-            await task.value
         }
     }
 }
+

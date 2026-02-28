@@ -28,7 +28,6 @@ final class TCPClient: @unchecked Sendable {
     public var onFail: (() -> Void)?
 
     public var onResponse: ((TCPResponseType) -> Void)?
-    public var onPingRTT: ((UInt64) -> Void)?
 
     init(host: String, port: UInt16) {
         self.address = host
@@ -130,11 +129,9 @@ final class TCPClient: @unchecked Sendable {
                 printLog("No data received.")
                 return
             }
-            self.queue.async {
-                self.handleReceivedData(data)
-                if self.connection.state == .ready {
-                    self.receiveNext()
-                }
+            self.handleReceivedData(data)
+            if self.connection.state == .ready {
+                self.receiveNext()
             }
         }
     }
