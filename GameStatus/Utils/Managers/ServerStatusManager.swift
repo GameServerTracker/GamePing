@@ -110,7 +110,7 @@ class ServerStatusManager: ObservableObject {
                     case .source:
                         server.port = 27015
                     case .fivem:
-                        server.port = 30125
+                        server.port = 30120
                     default: break
                     }
                 }
@@ -398,19 +398,19 @@ class ServerStatusManager: ObservableObject {
 
     private func fetchFivemStatus(for server: GameServer) async {
         let port = server.port == 0 ? 30120 : server.port
-        let dynamic: FiveMServerResponse? =
-            await NetworkManager.fetchFiveMDynamic(
-                address: server.address,
-                port: port
-            )
-        let info: FivemInfoResponse? = await NetworkManager.fetchFiveMInfo(
+        async let dynamicReq = NetworkManager.fetchFiveMDynamic(
             address: server.address,
             port: port
         )
-        let players: [FivemPlayer]? = await NetworkManager.fetchFiveMPlayers(
+        async let infoReq = NetworkManager.fetchFiveMInfo(
             address: server.address,
             port: port
         )
+        async let playersReq = NetworkManager.fetchFiveMPlayers(
+            address: server.address,
+            port: port
+        )
+        let (dynamic, info, players) = await (dynamicReq, infoReq, playersReq)
 
         if dynamic == nil || dynamic?.online == false {
             self.responses[server.id] = .offline
