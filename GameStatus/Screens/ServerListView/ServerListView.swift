@@ -19,10 +19,10 @@ struct ServerListView: View {
     ])
     private var gameServers: [GameServer]
 
-    @EnvironmentObject var statusManager: ServerStatusManager
+    @Environment(ServerStatusManager.self) var statusManager
     @Environment(\.modelContext) private var context
 
-    @StateObject private var viewModel: ServerListViewModel = .init()
+    @State private var viewModel: ServerListViewModel = .init()
 
     var body: some View {
         NavigationView {
@@ -144,5 +144,5 @@ struct ServerListView: View {
 #Preview {
     ServerListView()
         .modelContainer(for: GameServer.self, inMemory: true)
-        .environmentObject(ServerStatusManager())
+        .environment(ServerStatusManager())
 }

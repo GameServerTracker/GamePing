@@ -8,8 +8,10 @@
 import Foundation
 
 @MainActor
-class ServerStatusManager: ObservableObject {
-    @Published var responses: [UUID: ServerStatus] = [:]
+@Observable
+class ServerStatusManager {
+    public  var responses: [UUID: ServerStatus] = [:]
+
     private var clients: [UUID: Sendable] = [:]
     private var inflightTasks: [UUID: Task<Void, Never>] = [:]
 

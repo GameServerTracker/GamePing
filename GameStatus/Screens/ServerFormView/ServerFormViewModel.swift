@@ -13,21 +13,22 @@ enum ServerSaveAction {
     case edit
 }
 
-final class ServerFormViewModel: ObservableObject {
+@Observable
+final class ServerFormViewModel {
     private let server: GameServer?
 
-    @Published var serverName: String = ""
-    @Published var serverAddress: String = ""
-    @Published var serverPort: Int? = nil
-    @Published var serverType: GameServerType = .auto
+    var serverName: String = ""
+    var serverAddress: String = ""
+    var serverPort: Int? = nil
+    var serverType: GameServerType = .auto
     
-    @Published var bgColor: Color = .blue
-    @Published var fgColor: Color = .white
-    @Published var iconName: String  = "serverLogo"
+    var bgColor: Color = .blue
+    var fgColor: Color = .white
+    var iconName: String  = "serverLogo"
     
-    @Published var serverIconIgnore: Bool = false
-    
-    @Published var isIconEditedSheetPresented: Bool = false
+    var serverIconIgnore: Bool = false
+
+    var isIconEditedSheetPresented: Bool = false
     
     init(server: GameServer? = nil) {
         self.server = server

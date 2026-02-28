@@ -7,10 +7,11 @@
 
 import SwiftUI
 
-@MainActor final class ServerListViewModel: ObservableObject {
-    @Published var selectedServer: GameServer? {
+@Observable
+@MainActor final class ServerListViewModel {
+    var selectedServer: GameServer? {
         didSet { showAddServerModal = true }
     }
     
-    @Published var showAddServerModal: Bool = false
+    var showAddServerModal: Bool = false
 }

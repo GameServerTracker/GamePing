@@ -15,7 +15,7 @@ struct ServerDetailsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) var colorScheme
-    @EnvironmentObject var statusManager: ServerStatusManager
+    @Environment(ServerStatusManager.self) var statusManager
 
     @State private var showingConfirmationDelete: Bool = false
     @State private var showEditServerModal: Bool = false
@@ -302,12 +302,10 @@ struct TextDetailsView: View {
                     .fontWeight(.bold)
                     .font(.callout)
             }
-            if subtitle != nil {
-                Text(subtitle!)
+            if let subtitle {
+                Text(subtitle)
                     .foregroundStyle(.secondary)
                     .font(.footnote)
-            } else {
-
             }
         }.frame(maxWidth: .infinity)
     }
@@ -339,4 +337,5 @@ struct TextDetailsView: View {
         )
     )
     .modelContainer(container)
+    .environment(ServerStatusManager())
 }

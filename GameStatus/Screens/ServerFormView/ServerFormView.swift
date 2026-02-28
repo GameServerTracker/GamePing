@@ -19,7 +19,7 @@ struct ServerFormView: View {
     @Environment(\.reviewManager) private var reviewManager
     @Environment(\.requestReview) private var requestReview
 
-    @StateObject var viewModel: ServerFormViewModel
+    @State var viewModel: ServerFormViewModel
     @FocusState private var focusedTextField: FormTextField?
 
     @State private var sheetDetent: PresentationDetent = .height(200)
@@ -28,7 +28,7 @@ struct ServerFormView: View {
     init(server: GameServer?, isShowing: Binding<Bool>) {
         self.server = server
         self._isShowing = isShowing
-        _viewModel = StateObject(
+        _viewModel = State(
             wrappedValue: ServerFormViewModel(server: server)
         )
     }
