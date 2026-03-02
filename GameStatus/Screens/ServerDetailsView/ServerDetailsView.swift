@@ -11,15 +11,14 @@ import SwiftUI
 struct ServerDetailsView: View {
     let server: GameServer
     let response: ServerStatus?
-
+    
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) var colorScheme
     @Environment(ServerStatusManager.self) var statusManager
-
-    @State private var showingConfirmationDelete: Bool = false
+    
     @State private var showEditServerModal: Bool = false
-
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
@@ -28,8 +27,8 @@ struct ServerDetailsView: View {
                         Button {
                             showEditServerModal = true
                         } label: {
-                            if response?.favicon != nil && !server.serverIconIgnore {
-                                ServerIconImage(base64Image: response?.favicon)
+                            if let favicon = response?.favicon, !server.serverIconIgnore {
+                                ServerIconImage(base64Image: favicon)
                                     .frame(width: 102, height: 102)
                             } else {
                                 ServerIconDefault(
@@ -49,79 +48,13 @@ struct ServerDetailsView: View {
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
                                 .textSelection(.enabled)
-                            HStack(spacing: 10) {
-                                HStack {
-                                    Text(
-                                        response == nil
-                                            ? "Pinging..."
-                                            : (response!.online
-                                                ? "Online" : "Offline")
-                                    )
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                                    .padding(8)
-                                    .background(
-                                        response == nil
-                                            ? .brandPrimary
-                                            : (response!.online
-                                                ? .statusOnline
-                                                : .statusOffline)
-                                    )
-                                    .clipShape(Capsule())
-                                    if response?.online == true {
-                                        Label(
-                                            "\(response?.playersOnline ?? 0)",
-                                            systemImage: "person.fill"
-                                        )
-                                        .font(.caption)
-                                        .fontWeight(.bold)
-                                        .padding(8)
-                                        .background(.statusOnline)
-                                        .clipShape(Capsule())
-                                        if response!.ping != nil {
-                                            Text("\(response!.ping ?? 0) ms")
-                                                .font(.caption)
-                                                .fontWeight(.bold)
-                                                .padding(8)
-                                                .background(.statusOnline)
-                                                .clipShape(Capsule())
-                                        }
-                                    }
-                                }
-                            }
+                            serverinfoCapsule
                         }
                     }
                 }.frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 15)
                 ServerDetailsScrollView(server: server, response: response)
-                if response?.name != nil {
-                    Text(response?.name ?? "N/A")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .textSelection(.enabled)
-                }
-                if response?.motd != nil {
-                    MotdCard(motd: (response?.motd)!)
-                }
-                if let players = response?.players, !players.isEmpty {
-                    NavigationLink {
-                        PlayersFullView(players: players)
-                    } label: {
-                        PlayersListCard(players: response?.players?.map(\.name) ?? [])
-                    }
-                    .buttonStyle(.plain)
-                } else {
-                    PlayersListCard(players: [])
-                }
-                if (response?.keywords?.isEmpty) != nil {
-                    NavigationLink {
-                        TagsFullView(tags: (response?.keywords!)!)
-                    } label: {
-                        TagsListCard(tags: (response?.keywords!)!)
-                    }
-                    .buttonStyle(.plain)
-                }
+                serverInfoContent
                 Spacer()
             }
         }
@@ -134,59 +67,126 @@ struct ServerDetailsView: View {
             }
         }
         .background(Color.background)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    Button {
-                        UIPasteboard.general.string = server.getAddress()
-                    } label: {
-                        Label(
-                            "Copy Address",
-                            systemImage: "doc.on.clipboard"
-                        )
-                    }
-
-                    Button {
-                        showEditServerModal = true
-                    } label: {
-                        Label("Edit Server", systemImage: "pencil")
-                    }
-
-                    Button {
-                        showingConfirmationDelete = true
-                    } label: {
-                        Label("Delete Server", systemImage: "trash")
-                            .foregroundStyle(Color.statusOffline)
-                    }
-                } label: {
-                    if #available(iOS 26, *) {
-                        Image(systemName: "ellipsis")
-                    } else {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                }
-            }
-        }
-        .confirmationDialog(
-            "Are you sure you want to delete this server ?",
-            isPresented: $showingConfirmationDelete
-        ) {
-            Button("Delete", role: .destructive) {
-                do {
-                    context.delete(server)
-                    try context.save()
-                    dismiss()
-                } catch {
-                    print("Error during the deletion: \(error)")
-                }
-            }
-            Button("Cancel", role: .cancel) {
-                showingConfirmationDelete = false
-            }
-        }
+        .toolbar { menuToolbarItems }
         .sheet(isPresented: $showEditServerModal) {
             ServerFormView(server: server, isShowing: $showEditServerModal)
                 .presentationBackground(Color.background)
+        }
+    }
+    
+    @ViewBuilder
+    private var serverinfoCapsule: some View {
+        HStack(spacing: 10) {
+            HStack {
+                Text(
+                    response == nil
+                    ? "Pinging..."
+                    : (response!.online
+                       ? "Online" : "Offline")
+                )
+                .font(.caption)
+                .fontWeight(.bold)
+                .padding(8)
+                .background(
+                    response == nil
+                    ? .brandPrimary
+                    : (response!.online
+                       ? .statusOnline
+                       : .statusOffline)
+                )
+                .clipShape(Capsule())
+                if response?.online == true {
+                    Label(
+                        "\(response?.playersOnline ?? 0)",
+                        systemImage: "person.fill"
+                    )
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .padding(8)
+                    .background(.statusOnline)
+                    .clipShape(Capsule())
+                    if let ping = response?.ping {
+                        Text("\(ping) ms")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .padding(8)
+                            .background(.statusOnline)
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var serverInfoContent: some View {
+        if let name = response?.name {
+            Text(name)
+                .font(.headline)
+                .foregroundColor(.primary)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .textSelection(.enabled)
+        }
+        if let motd = response?.motd {
+            MotdCard(motd: motd)
+        }
+        if let players = response?.players, !players.isEmpty {
+            NavigationLink {
+                PlayersFullView(players: players)
+            } label: {
+                PlayersListCard(players: response?.players?.map(\.name) ?? [])
+            }
+            .buttonStyle(.plain)
+        } else {
+            PlayersListCard(players: [])
+        }
+        if let keywords = response?.keywords, !keywords.isEmpty {
+            NavigationLink {
+                TagsFullView(tags: keywords)
+            } label: {
+                TagsListCard(tags: keywords)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+    
+    @ToolbarContentBuilder
+    private var menuToolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Menu {
+                Button {
+                    UIPasteboard.general.string = server.getAddress()
+                } label: {
+                    Label(
+                        "Copy Address",
+                        systemImage: "doc.on.clipboard"
+                    )
+                }
+
+                Button {
+                    showEditServerModal = true
+                } label: {
+                    Label("Edit Server", systemImage: "pencil")
+                }
+
+                Button(role: .destructive) {
+                    do {
+                        context.delete(server)
+                        try context.save()
+                        dismiss()
+                    } catch {
+                        print("Error during the deletion: \(error)")
+                    }
+                } label: {
+                    Label("Delete Server", systemImage: "trash")
+                }
+            } label: {
+                if #available(iOS 26, *) {
+                    Image(systemName: "ellipsis")
+                } else {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
         }
     }
 }
@@ -206,47 +206,47 @@ struct ServerDetailsScrollView: View {
                     subtitle: gameServerTypesDisplayName[server.type]
                         ?? "Unknown"
                 )
-                if response?.playersMax != nil {
+                if let playerMax = response?.playersMax {
                     Divider().frame(height: 55)
                     TextDetailsView(
                         title: "MAX PLAYERS",
-                        content: "\(response?.playersMax ?? 0)",
+                        content: "\(playerMax)",
                         subtitle: nil
                     )
                 }
-                if response?.version != nil {
+                if let version = response?.version {
                     Divider().frame(height: 55)
                     TextDetailsView(
                         title: "VERSION",
-                        content: (response?.version)!,
+                        content: version,
                         subtitle: nil
                     )
                 }
-                if response?.map != nil && response?.map != "" {
+                if let map = response?.map, map != "" {
                     Divider().frame(height: 55)
                     TextDetailsView(
                         title: "MAP",
-                        content: (response?.map)!,
+                        content: map,
                         subtitle: nil
                     )
                 }
-                if response?.game != nil {
+                if let game = response?.game {
                     Divider().frame(height: 55)
                     TextDetailsView(
                         title: "GAME",
-                        content: (response?.game)!,
+                        content: game,
                         subtitle: nil
                     )
                 }
-                if response?.os != nil {
+                if let os = response?.os {
                     Divider().frame(height: 55)
                     ImageDetailsView(
                         title: "OS",
                         image: Image(
-                            gameServerOsTypesIconName[response?.os ?? "U"]
+                            gameServerOsTypesIconName[os]
                                 ?? "questionmark.circle.fill"
                         ),
-                        subtitle: gameServerOsTypesName[response?.os ?? "U"]
+                        subtitle: gameServerOsTypesName[os]
                             ?? "Unknown"
                     )
                 }
@@ -275,8 +275,8 @@ struct ImageDetailsView: View {
                 .resizable()
                 .foregroundStyle(.secondary)
                 .frame(width: 24, height: 24)
-            if subtitle != nil {
-                Text(subtitle!)
+            if let subtitle {
+                Text(subtitle)
                     .foregroundStyle(.secondary)
                     .font(.footnote)
             }

@@ -12,6 +12,10 @@ import SwiftData
 struct GameStatusApp: App {
     @State private var statusManager = ServerStatusManager()
 
+    init() {
+         UITextField.appearance().clearButtonMode = .whileEditing
+     }
+
     var body: some Scene {
         WindowGroup {
             ServerListView()

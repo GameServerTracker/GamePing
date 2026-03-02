@@ -20,8 +20,8 @@ struct ServerListCell: View {
         HStack {
             HStack {
                 HStack {
-                    if response?.favicon != nil && !server.serverIconIgnore {
-                        ServerIconImage(base64Image: response?.favicon)
+                    if let favicon = response?.favicon, !server.serverIconIgnore {
+                        ServerIconImage(base64Image: favicon)
                     } else {
                         ServerIconDefault(
                             iconImage: Image(server.iconName ?? "serverLogo"),
@@ -34,7 +34,7 @@ struct ServerListCell: View {
                     Text(server.name)
                         .font(.headline)
                         .fontWeight(.medium)
-                    Text(gameServerTypesDisplayName[server.type]!)
+                    Text(gameServerTypesDisplayName[server.type] ?? server.type)
                         .foregroundColor(.secondary)
                         .font(.footnote)
                         .fontWeight(.semibold)
