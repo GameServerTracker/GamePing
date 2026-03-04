@@ -447,7 +447,7 @@ class ServerStatusManager {
 
         let keywords: [String]? = {
             if let tags = info?.vars?.tags {
-                return tags.components(separatedBy: ", ")
+                return tags.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             }
             return nil
         }()
@@ -511,7 +511,7 @@ class ServerStatusManager {
         if let info {
             let keywords: [String]? = {
                 if let tags = info.data.vars.tags {
-                    return tags.components(separatedBy: ", ")
+                    return tags.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 }
                 return nil
             }()
