@@ -36,60 +36,14 @@
       "hidden" : false,
       "layers" : [
         {
-          "glass-specializations" : [
-            {
-              "value" : false
-            },
-            {
-              "appearance" : "dark",
-              "value" : true
-            }
-          ],
-          "image-name" : "nes_controller.svg",
-          "name" : "nes_controller",
-          "position" : {
-            "scale" : 1.3,
-            "translation-in-points" : [
-              82.765625,
-              188.84375
-            ]
-          }
-        },
-        {
-          "blend-mode" : "normal",
-          "fill" : "automatic",
-          "glass-specializations" : [
-            {
-              "value" : false
-            },
-            {
-              "appearance" : "dark",
-              "value" : true
-            }
-          ],
           "hidden" : false,
-          "image-name" : "Group 8.svg",
-          "name" : "Group 8",
+          "image-name" : "NES Controller.svg",
+          "name" : "NES Controller",
           "position" : {
-            "scale" : 1.26,
+            "scale" : 1.1,
             "translation-in-points" : [
-              0,
-              -0.515625
-            ]
-          }
-        },
-        {
-          "blend-mode" : "normal",
-          "fill" : "automatic",
-          "hidden" : true,
-          "image-name" : "gst-logo.svg",
-          "name" : "gst-logo",
-          "opacity" : 1,
-          "position" : {
-            "scale" : 1.63,
-            "translation-in-points" : [
-              64.7265625,
-              327.8984375
+              82.8,
+              188
             ]
           }
         }
@@ -125,7 +79,7 @@
       ],
       "specular-specializations" : [
         {
-          "value" : false
+          "value" : true
         },
         {
           "appearance" : "dark",
@@ -139,15 +93,15 @@
       "translucency-specializations" : [
         {
           "value" : {
-            "enabled" : false,
+            "enabled" : true,
             "value" : 0.08
           }
         },
         {
           "appearance" : "dark",
           "value" : {
-            "enabled" : false,
-            "value" : 0.29
+            "enabled" : true,
+            "value" : 0.08
           }
         },
         {
@@ -158,6 +112,235 @@
           }
         }
       ]
+    },
+    {
+      "blend-mode-specializations" : [
+        {
+          "value" : "hard-light"
+        },
+        {
+          "appearance" : "dark",
+          "value" : "normal"
+        },
+        {
+          "appearance" : "tinted",
+          "value" : "hard-light"
+        }
+      ],
+      "blur-material" : 0.1,
+      "layers" : [
+        {
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "srgb:1.00000,0.14913,0.00000,1.00000"
+              }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : {
+                "solid" : "srgb:0.92143,0.92145,0.92144,1.00000"
+              }
+            }
+          ],
+          "glass" : true,
+          "hidden" : false,
+          "image-name" : "Light 1.svg",
+          "name" : "Light 1",
+          "position" : {
+            "scale" : 1.16,
+            "translation-in-points" : [
+              -293,
+              -188
+            ]
+          }
+        },
+        {
+          "blend-mode" : "normal",
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "extended-srgb:1.00000,0.80000,0.00000,1.00000"
+              }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : {
+                "solid" : "srgb:0.92143,0.92145,0.92144,1.00000"
+              }
+            }
+          ],
+          "hidden" : false,
+          "image-name" : "Light 2.svg",
+          "name" : "Light 2",
+          "position" : {
+            "scale" : 1.16,
+            "translation-in-points" : [
+              -293,
+              -5
+            ]
+          }
+        },
+        {
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "extended-srgb:0.20392,0.78039,0.34902,1.00000"
+              }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : {
+                "solid" : "srgb:0.92143,0.92145,0.92144,1.00000"
+              }
+            }
+          ],
+          "image-name" : "Light 3.svg",
+          "name" : "Light 3",
+          "position" : {
+            "scale" : 1.16,
+            "translation-in-points" : [
+              -293,
+              170
+            ]
+          }
+        }
+      ],
+      "lighting-specializations" : [
+        {
+          "value" : "individual"
+        },
+        {
+          "appearance" : "tinted",
+          "value" : "individual"
+        }
+      ],
+      "shadow-specializations" : [
+        {
+          "value" : {
+            "kind" : "neutral",
+            "opacity" : 0.3
+          }
+        },
+        {
+          "appearance" : "dark",
+          "value" : {
+            "kind" : "neutral",
+            "opacity" : 0.3
+          }
+        },
+        {
+          "appearance" : "tinted",
+          "value" : {
+            "kind" : "neutral",
+            "opacity" : 0.8
+          }
+        }
+      ],
+      "specular" : true,
+      "translucency-specializations" : [
+        {
+          "value" : {
+            "enabled" : false,
+            "value" : 0.3
+          }
+        },
+        {
+          "appearance" : "dark",
+          "value" : {
+            "enabled" : false,
+            "value" : 0.3
+          }
+        },
+        {
+          "appearance" : "tinted",
+          "value" : {
+            "enabled" : false,
+            "value" : 0.3
+          }
+        }
+      ]
+    },
+    {
+      "blend-mode" : "screen",
+      "blur-material" : null,
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "extended-gray:1.00000,1.00000"
+          },
+          "glass" : true,
+          "image-name" : "Rectangle.svg",
+          "name" : "Rectangle",
+          "position" : {
+            "scale" : 1.16,
+            "translation-in-points" : [
+              87,
+              -8
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.35
+      }
+    },
+    {
+      "blur-material" : 0.5,
+      "hidden" : false,
+      "layers" : [
+        {
+          "blend-mode" : "normal",
+          "fill" : {
+            "solid" : "extended-gray:0.25000,1.00000"
+          },
+          "glass" : true,
+          "hidden" : false,
+          "image-name" : "Rack.svg",
+          "name" : "Rack",
+          "position" : {
+            "scale" : 1.16,
+            "translation-in-points" : [
+              0,
+              -8
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "shadow-specializations" : [
+        {
+          "value" : {
+            "kind" : "layer-color",
+            "opacity" : 0.8
+          }
+        },
+        {
+          "appearance" : "dark",
+          "value" : {
+            "kind" : "layer-color",
+            "opacity" : 0.8
+          }
+        },
+        {
+          "appearance" : "tinted",
+          "value" : {
+            "kind" : "layer-color",
+            "opacity" : 0.8
+          }
+        }
+      ],
+      "specular" : false,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
     }
   ],
   "supported-platforms" : {
