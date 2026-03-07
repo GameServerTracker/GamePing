@@ -104,7 +104,7 @@ struct ServerFormView: View {
                 .resizable()
                 .frame(width: 20, height: 20)
             TextField(
-                viewModel.serverType == .fivemctx ? "CTX Code - abc123" : "Hostname - myserver.net",
+                viewModel.serverType == .auto ? "Hostname - myserver.net / ctxcode" : viewModel.serverType == .fivemctx ? "CTX Code - abc123" : "Hostname - myserver.net",
                 text: $viewModel.serverAddress
             )
             .textInputAutocapitalization(.never)
@@ -385,3 +385,4 @@ struct ServerFormView: View {
     ServerFormView(server: nil, isShowing: .constant(true))
         .modelContainer(for: GameServer.self, inMemory: true)
 }
+
