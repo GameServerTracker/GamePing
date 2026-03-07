@@ -108,7 +108,7 @@ struct ServerFormView: View {
                 text: $viewModel.serverAddress
             )
             .textInputAutocapitalization(.never)
-            .keyboardType(.alphabet)
+            .keyboardType(.URL)
             .disableAutocorrection(true)
             .focused(
                 $focusedTextField,
