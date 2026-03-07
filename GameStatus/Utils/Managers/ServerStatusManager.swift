@@ -58,8 +58,8 @@ class ServerStatusManager {
             await fetchMinecraftStatus(for: server)
         case GameServerType.fivem.rawValue:
             await fetchFivemStatus(for: server)
-        case GameServerType.fivemctx.rawValue:
-            await fetchFivemCtxStatus(for: server)
+        case GameServerType.fivemcfx.rawValue:
+            await fetchFivemCfxStatus(for: server)
         default:
             print("[\(server.name)][\(server.type)] Server type not supported")
             responses[server.id] = .offline
@@ -87,8 +87,8 @@ class ServerStatusManager {
                 action: { await self.fetchFivemStatus(for: server) }
             ),
             ProtocolAttempt(
-                type: .fivemctx,
-                action: { await self.fetchFivemCtxStatus(for: server) }
+                type: .fivemcfx,
+                action: { await self.fetchFivemCfxStatus(for: server) }
             )
         ]
 
@@ -151,7 +151,7 @@ class ServerStatusManager {
             if port == 30120 { score += 100 }
             if address.contains("gta") || address.contains("red") { score += 50 }
             if address.contains("rp") || address.contains("roleplay") { score += 20 }
-        case .fivemctx:
+        case .fivemcfx:
             if address.count == 6 { score += 100 }
         default:
             break
@@ -507,8 +507,8 @@ class ServerStatusManager {
         self.responses[server.id] = status
     }
     
-    private func fetchFivemCtxStatus(for server: GameServer) async {
-        let info: FivemCtxResponse? = await NetworkManager.fetchFiveMCtx(code: server.address)
+    private func fetchFivemCfxStatus(for server: GameServer) async {
+        let info: FivemCfxResponse? = await NetworkManager.fetchFiveMCfx(code: server.address)
         
         if let info {
             let keywords: [String]? = {

@@ -46,7 +46,7 @@ class GameServer {
     }
     
     public func getAddress() -> String {
-        if type == GameServerType.fivemctx.rawValue {
+        if type == GameServerType.fivemcfx.rawValue {
             return address
         }
         return "\(address):\(port)"

@@ -10,7 +10,7 @@ enum GameServerType: String, CaseIterable, Identifiable, Codable {
     case bedrock = "mcb"
     case source = "source"
     case fivem = "fivem"
-    case fivemctx = "fivemctx"
+    case fivemcfx = "fivemcfx"
     case auto = "auto"
     case unknown = "unknown"
     
@@ -22,7 +22,7 @@ let gameServerTypesDisplayName: [String: String] = [
     GameServerType.bedrock.rawValue: "Minecraft Bedrock",
     GameServerType.source.rawValue: "Source",
     GameServerType.fivem.rawValue: "FiveM",
-    GameServerType.fivemctx.rawValue: "FiveM CTX",
+    GameServerType.fivemcfx.rawValue: "FiveM CFX",
     GameStatus.GameServerType.auto.rawValue: "Automatic",
     GameServerType.unknown.rawValue: "Unknown",
 ];
@@ -32,7 +32,7 @@ let gameServerTypesIconName: [String: String] = [
     GameServerType.bedrock.rawValue: "minecraft_icon",
     GameServerType.source.rawValue: "source_icon",
     GameServerType.fivem.rawValue: "fivem",
-    GameServerType.fivemctx.rawValue: "fivem",
+    GameServerType.fivemcfx.rawValue: "fivem",
     GameServerType.unknown.rawValue: "questionmark.circle.fill",
     GameServerType.auto.rawValue: "sparkles",
 ];
@@ -54,6 +54,6 @@ let gameServerTypesPort: [String: Int] = [
     GameServerType.bedrock.rawValue: 19132,
     GameServerType.source.rawValue: 27015,
     GameServerType.fivem.rawValue: 30120,
-    GameServerType.fivemctx.rawValue: 0,
+    GameServerType.fivemcfx.rawValue: 0,
     GameServerType.unknown.rawValue: 0,
 ];

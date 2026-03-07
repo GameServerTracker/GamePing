@@ -104,7 +104,7 @@ struct ServerFormView: View {
                 .resizable()
                 .frame(width: 20, height: 20)
             TextField(
-                viewModel.serverType == .auto ? "Hostname - myserver.net / ctxcode" : viewModel.serverType == .fivemctx ? "CTX Code - abc123" : "Hostname - myserver.net",
+                viewModel.serverType == .auto ? "Hostname - myserver.net / cfxcode" : viewModel.serverType == .fivemcfx ? "CFX Code - abc123" : "Hostname - myserver.net",
                 text: $viewModel.serverAddress
             )
             .textInputAutocapitalization(.never)
@@ -168,14 +168,14 @@ struct ServerFormView: View {
                     GameServerType.source
                 )
                 Text("FiveM / RedM").tag(GameServerType.fivem)
-                Text("FiveM CTX Code").tag(GameServerType.fivemctx)
+                Text("FiveM CFX Code").tag(GameServerType.fivemcfx)
             }
         }
     }
     
     @ViewBuilder
     private var portField: some View {
-        if ![GameServerType.fivemctx]
+        if ![GameServerType.fivemcfx]
             .contains(viewModel.serverType)
         {
             HStack {
@@ -194,7 +194,7 @@ struct ServerFormView: View {
     
     @ViewBuilder
     private var ignoreIconField: some View {
-        if [GameServerType.fivem, GameServerType.fivemctx, GameServerType.minecraft]
+        if [GameServerType.fivem, GameServerType.fivemcfx, GameServerType.minecraft]
             .contains(viewModel.serverType)
         {
             HStack {

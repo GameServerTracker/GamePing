@@ -67,7 +67,7 @@ struct FivemInfoResponse: Codable {
     }
 }
 
-struct FivemCtxResponse: Codable {
+struct FivemCfxResponse: Codable {
     let endPoint: String
     let data: ServerData
 

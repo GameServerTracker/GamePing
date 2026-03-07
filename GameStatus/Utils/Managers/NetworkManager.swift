@@ -79,14 +79,14 @@ final class NetworkManager {
         }
     }
 
-    static func fetchFiveMCtx(code: String) async -> FivemCtxResponse? {
+    static func fetchFiveMCfx(code: String) async -> FivemCfxResponse? {
         let url = URL(string: "\(Self.fivemBaseURL)/single/\(code)")!
         var request = URLRequest(url: url)
         request.timeoutInterval = 2
 
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-            let decoded = try JSONDecoder().decode(FivemCtxResponse.self, from: data)
+            let decoded = try JSONDecoder().decode(FivemCfxResponse.self, from: data)
             return decoded
         } catch {
             print("[\(#fileID):\(#line)] \(#function) failed: \(error)")
