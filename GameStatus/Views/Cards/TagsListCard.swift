@@ -27,7 +27,7 @@ struct TagsListCard: View {
                         .foregroundColor(.brandPrimary)
                 }
                 LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
-                    ForEach(tags.prefix(5), id: \.self) { tag in
+                    ForEach(Array(tags.prefix(5).enumerated()), id: \.offset) { _, tag in
                         if (!tag.isEmpty) {
                             Text(tag)
                                 .font(.caption)

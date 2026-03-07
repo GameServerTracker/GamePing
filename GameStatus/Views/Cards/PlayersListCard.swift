@@ -44,7 +44,7 @@ struct PlayersListCard: View {
                 } else {
                     ZStack {
                         LazyVGrid(columns: fixedColumn, spacing: 10) {
-                            ForEach(players.prefix(9), id: \.self) { item in
+                            ForEach(Array(players.prefix(9).enumerated()), id: \.offset) { _, item in
                                 Text(String(item))
                                     .frame(alignment: .center)
                                     .font(.body)

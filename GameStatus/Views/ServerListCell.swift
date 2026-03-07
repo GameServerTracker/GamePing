@@ -43,29 +43,34 @@ struct ServerListCell: View {
             }
             .frame(width: 210, alignment: .leading)
             VStack(alignment: .trailing) {
-                if response != nil {
-                    if response!.online {
-                        HStack(spacing: 4) {
-                            Image(
-                                systemName: (response!.playersOnline! > 0
-                                    ? "person.fill" : "person.slash.fill")
-                            )
-                            .foregroundStyle(
-                                (response!.playersOnline! > 0
-                                    ? .statusOnline : .gray)
-                            )
-                            .symbolRenderingMode(.hierarchical)
-                            Text("\(response!.playersOnline ?? 0)")
-                                .font(.callout)
-                                .foregroundStyle(
-                                    (response!.playersOnline! > 0
-                                        ? .statusOnline : .gray)
+                if let response = response {
+                    if response.online {
+                        if let playersOnline = response.playersOnline {
+                            HStack(spacing: 4) {
+                                Image(
+                                    systemName: (playersOnline > 0 ? "person.fill" : "person.slash.fill")
                                 )
+                                .foregroundStyle(
+                                    (playersOnline > 0 ? .statusOnline : .gray)
+                                )
+                                .symbolRenderingMode(.hierarchical)
+                                Text("\(response.playersOnline ?? 0)")
+                                    .font(.callout)
+                                    .foregroundStyle(
+                                        (playersOnline > 0 ? .statusOnline : .gray)
+                                    )
+                                    .fontWeight(.medium)
+                                    .lineLimit(1)
+                            }
+                        } else {
+                            Text("Online")
+                                .font(.callout)
+                                .foregroundStyle(.statusOnline)
                                 .fontWeight(.medium)
                                 .lineLimit(1)
                         }
-                        if response!.ping != nil {
-                            Text("\(response!.ping ?? 0) ms")
+                        if let ping = response.ping {
+                            Text("\(ping) ms")
                                 .font(.callout)
                                 .lineLimit(1)
                         }

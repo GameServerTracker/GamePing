@@ -78,41 +78,41 @@ struct ServerDetailsView: View {
     private var serverinfoCapsule: some View {
         HStack(spacing: 10) {
             HStack {
-                Text(
-                    response == nil
-                    ? "Pinging..."
-                    : (response!.online
-                       ? "Online" : "Offline")
-                )
-                .font(.caption)
-                .fontWeight(.bold)
-                .padding(8)
-                .background(
-                    response == nil
-                    ? .brandPrimary
-                    : (response!.online
-                       ? .statusOnline
-                       : .statusOffline)
-                )
-                .clipShape(Capsule())
-                if response?.online == true {
-                    Label(
-                        "\(response?.playersOnline ?? 0)",
-                        systemImage: "person.fill"
-                    )
+                if let response = response {
+                    Text(response.online ? "Online" : "Offline")
                     .font(.caption)
                     .fontWeight(.bold)
                     .padding(8)
-                    .background(.statusOnline)
+                    .background(
+                        (response.online ? .statusOnline : .statusOffline)
+                    )
                     .clipShape(Capsule())
-                    if let ping = response?.ping {
-                        Text("\(ping) ms")
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .padding(8)
-                            .background(.statusOnline)
-                            .clipShape(Capsule())
+                    if response.online == true {
+                        Label(
+                            "\(response.playersOnline ?? 0)",
+                            systemImage: "person.fill"
+                        )
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .padding(8)
+                        .background(.statusOnline)
+                        .clipShape(Capsule())
+                        if let ping = response.ping {
+                            Text("\(ping) ms")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .padding(8)
+                                .background(.statusOnline)
+                                .clipShape(Capsule())
+                        }
                     }
+                } else {
+                    Text("Pinging...")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .padding(8)
+                    .background(.brandPrimary)
+                    .clipShape(Capsule())
                 }
             }
         }
