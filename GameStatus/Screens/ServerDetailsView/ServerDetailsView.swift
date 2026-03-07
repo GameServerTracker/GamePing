@@ -214,7 +214,7 @@ struct ServerDetailsScrollView: View {
                         subtitle: nil
                     )
                 }
-                if let version = response?.version {
+                if let version = response?.version, !version.isEmpty {
                     Divider().frame(height: 55)
                     TextDetailsView(
                         title: "VERSION",
@@ -222,7 +222,7 @@ struct ServerDetailsScrollView: View {
                         subtitle: nil
                     )
                 }
-                if let map = response?.map, map != "" {
+                if let map = response?.map, !map.isEmpty {
                     Divider().frame(height: 55)
                     TextDetailsView(
                         title: "MAP",
@@ -230,7 +230,7 @@ struct ServerDetailsScrollView: View {
                         subtitle: nil
                     )
                 }
-                if let game = response?.game {
+                if let game = response?.game, !game.isEmpty {
                     Divider().frame(height: 55)
                     TextDetailsView(
                         title: "GAME",
@@ -238,7 +238,7 @@ struct ServerDetailsScrollView: View {
                         subtitle: nil
                     )
                 }
-                if let os = response?.os {
+                if let os = response?.os, !os.isEmpty {
                     Divider().frame(height: 55)
                     ImageDetailsView(
                         title: "OS",
