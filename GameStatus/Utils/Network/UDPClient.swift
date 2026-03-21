@@ -280,11 +280,10 @@ final class UDPClient: @unchecked Sendable {
             )
             return (.challenge(payload), true)
         case QueryResponseHeader.mcUnconnectedPong.rawValue:
-            return (
-                .mcUnconnectedPong(
-                    parseMinecraftBedrockUnconnectedPong(payload)
-                ), false
-            )
+            guard let pong = parseMinecraftBedrockUnconnectedPong(payload) else {
+                return (nil, false)
+            }
+            return (.mcUnconnectedPong(pong), false)
         default:
             print("Response not handled: \(header) / \(payload.hexDescription)")
             return (nil, false)

@@ -39,29 +39,31 @@ struct MinecraftBedrockUnconnectedPong {
     }
 }
 
-func parseMinecraftBedrockUnconnectedPong(_ data: Data) -> MinecraftBedrockUnconnectedPong {
+func parseMinecraftBedrockUnconnectedPong(_ data: Data) -> MinecraftBedrockUnconnectedPong? {
     var payload: Data = data
 
-    let _: UInt64 = payload.getUInt64LittleEndian()! // Time
-    let serverGuid: UInt64 = payload.getUInt64BigEndian()!
+    guard payload.getUInt64LittleEndian() != nil else { return nil } // Time
+    guard let serverGuid: UInt64 = payload.getUInt64BigEndian() else { return nil }
+    guard payload.count >= 16 else { return nil }
     payload.removeFirst(16) // Remove Magic
-    let _: UInt16 = payload.getUInt16()! // Str length
+    guard payload.getUInt16() != nil else { return nil } // Str length
     payload.append(0x00)
-    let content: String = payload.getString()!
-    
+    guard let content: String = payload.getString() else { return nil }
+
     // e.g. MCPE;PocketMine-MP Server;819;;62;300;1058229627473266407;PocketMine-MP;Survival;0000;0000
     let contentArray: [String] = content.components(separatedBy: ";")
+    guard contentArray.indices.contains(MCB_CONTENT_IDX_GAMEMODE) else { return nil }
     return MinecraftBedrockUnconnectedPong(
         serverGuid: serverGuid,
         edition: contentArray[MCB_CONTENT_IDX_EDITION],
-        motd: contentArray[MCB_CONTENT_IDX_MOTD] + "\n" +  contentArray[MCB_CONTENT_IDX_MOTD_SECOND],
+        motd: contentArray[MCB_CONTENT_IDX_MOTD] + "\n" + (contentArray.indices.contains(MCB_CONTENT_IDX_MOTD_SECOND) ? contentArray[MCB_CONTENT_IDX_MOTD_SECOND] : ""),
         version: .init(name: contentArray[MCB_CONTENT_IDX_VERSION_NAME], protocol: UInt(contentArray[MCB_CONTENT_IDX_VERSION_PROTOCOL]) ?? 0),
         players: UInt(contentArray[MCB_CONTENT_IDX_PLAYERS]) ?? 0,
         maxPlayers: UInt(contentArray[MCB_CONTENT_IDX_MAX_PLAYERS]) ?? 0,
         serverId: contentArray[MCB_CONTENT_IDX_SERVER_ID],
         gamemode: contentArray[MCB_CONTENT_IDX_GAMEMODE],
         gamemodeId: contentArray.indices.contains(MCB_CONTENT_IDX_GAMEMODE_ID) ? UInt(contentArray[MCB_CONTENT_IDX_GAMEMODE_ID]) : nil,
-        port: contentArray.indices.contains(MCB_CONTENT_IDX_PORT) ?  UInt16(contentArray[MCB_CONTENT_IDX_PORT]) : nil,
+        port: contentArray.indices.contains(MCB_CONTENT_IDX_PORT) ? UInt16(contentArray[MCB_CONTENT_IDX_PORT]) : nil,
         portIpv6: contentArray.indices.contains(MCB_CONTENT_IDX_PORT_IPV6) ? UInt16(contentArray[MCB_CONTENT_IDX_PORT_IPV6]) : nil
     )
 }
