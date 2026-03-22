@@ -28,7 +28,7 @@ struct ServerGridCard: View {
     @Environment(\.modelContext) private var context
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Group {
                     if let favicon = response?.favicon, !server.serverIconIgnore {
@@ -41,26 +41,26 @@ struct ServerGridCard: View {
                         )
                     }
                 }
-                .frame(width: 64, height: 64)
+                .frame(width: 80, height: 80)
 
                 Spacer()
 
                 statusView
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(server.name)
-                    .font(.headline)
+                    .font(.title3)
                     .fontWeight(.semibold)
                     .lineLimit(1)
                 Text(gameServerTypesDisplayName[server.type] ?? server.type)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fontWeight(.semibold)
                     .lineLimit(1)
             }
         }
-        .padding(14)
+        .padding(18)
         .background {
             if #available(iOS 26, *) {
                 Color.clear

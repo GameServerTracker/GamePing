@@ -24,6 +24,7 @@ struct ServerListView: View {
 
     @State private var viewModel: ServerListViewModel = .init()
     @State private var navigationSelectedServer: GameServer?
+    @State private var draggedServer: GameServer?
 
     private var isIPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
 
@@ -38,7 +39,6 @@ struct ServerListView: View {
     // MARK: - iPad
 
     private var iPadLayout: some View {
-
         NavigationStack {
             ZStack {
                 if gameServers.isEmpty {
@@ -50,48 +50,7 @@ struct ServerListView: View {
                 } else {
                     Color(.background)
                         .edgesIgnoringSafeArea(.all)
-                    ScrollView {
-                        LazyVGrid(
-                            columns: [
-                                GridItem(.adaptive(minimum: 220, maximum: 250))
-                            ],
-                            spacing: 16
-                        ) {
-                            ForEach(gameServers, id: \.id) { server in
-                                NavigationLink {
-                                    ServerDetailsView(
-                                        server: server,
-                                        response: statusManager.getResponse(
-                                            for: server
-                                        )
-                                    )
-                                } label: {
-                                    ServerGridCard(
-                                        server: server,
-                                        response: statusManager.getResponse(
-                                            for: server
-                                        ),
-                                        selectedServer: $viewModel.selectedServer
-                                    )
-                                }
-                                .tint(.primary)
-                                .task {
-                                    if statusManager.getResponse(for: server)
-                                        == nil
-                                    {
-                                        await statusManager.fetchStatus(
-                                            for: server
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        .padding()
-                    }
-                    .refreshable {
-                        statusManager.responses.removeAll()
-                        await statusManager.fetchAllStatuses(for: gameServers)
-                    }
+                    iPadGrid
                 }
             }
             .navigationTitle("Servers")
@@ -136,6 +95,89 @@ struct ServerListView: View {
                 server: viewModel.selectedServer,
                 isShowing: $viewModel.showAddServerModal
             ).presentationBackground(Color.background)
+        }
+    }
+
+    // MARK: - iPad Grid (with drag & drop reordering)
+
+    private var iPadGrid: some View {
+        ScrollView {
+            LazyVGrid(
+                columns: [
+                    GridItem(.adaptive(minimum: 280, maximum: 340))
+                ],
+                spacing: 16
+            ) {
+                ForEach(gameServers, id: \.id) { server in
+                    NavigationLink {
+                        ServerDetailsView(
+                            server: server,
+                            response: statusManager.getResponse(
+                                for: server
+                            )
+                        )
+                    } label: {
+                        ServerGridCard(
+                            server: server,
+                            response: statusManager.getResponse(
+                                for: server
+                            ),
+                            selectedServer: $viewModel.selectedServer
+                        )
+                    }
+                    .tint(.primary)
+                    .draggable(server.id.uuidString) {
+                        ServerGridCard(
+                            server: server,
+                            response: statusManager.getResponse(
+                                for: server
+                            ),
+                            selectedServer: .constant(nil)
+                        )
+                        .frame(width: 280)
+                        .opacity(0.8)
+                        .onAppear { draggedServer = server }
+                    }
+                    .dropDestination(for: String.self) { _, _ in
+                        draggedServer = nil
+                        return false
+                    } isTargeted: { isTargeted in
+                        guard isTargeted,
+                              let dragged = draggedServer,
+                              dragged.id != server.id else { return }
+
+                        withAnimation {
+                            var servers = gameServers.sorted { $0.order < $1.order }
+                            guard let fromIndex = servers.firstIndex(where: { $0.id == dragged.id }),
+                                  let toIndex = servers.firstIndex(where: { $0.id == server.id })
+                            else { return }
+
+                            servers.move(
+                                fromOffsets: IndexSet(integer: fromIndex),
+                                toOffset: toIndex > fromIndex ? toIndex + 1 : toIndex
+                            )
+                            for (index, item) in servers.enumerated() {
+                                item.order = index
+                            }
+                            try? context.save()
+                        }
+                    }
+                    .task {
+                        if statusManager.getResponse(for: server)
+                            == nil
+                        {
+                            await statusManager.fetchStatus(
+                                for: server
+                            )
+                        }
+                    }
+                }
+            }
+            .padding()
+        }
+        .refreshable {
+            statusManager.responses.removeAll()
+            await statusManager.fetchAllStatuses(for: gameServers)
         }
     }
 
