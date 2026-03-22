@@ -23,8 +23,125 @@ struct ServerListView: View {
     @Environment(\.modelContext) private var context
 
     @State private var viewModel: ServerListViewModel = .init()
+    @State private var navigationSelectedServer: GameServer?
+
+    private var isIPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
 
     var body: some View {
+        if isIPad {
+            iPadLayout
+        } else {
+            iPhoneLayout
+        }
+    }
+
+    // MARK: - iPad
+
+    private var iPadLayout: some View {
+
+        NavigationStack {
+            ZStack {
+                if gameServers.isEmpty {
+                    EmptyState(
+                        title:
+                            "No servers added\n Click the plus button to add one",
+                        imageName: "serverLogoUnique"
+                    )
+                } else {
+                    Color(.background)
+                        .edgesIgnoringSafeArea(.all)
+                    ScrollView {
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.adaptive(minimum: 220, maximum: 250))
+                            ],
+                            spacing: 16
+                        ) {
+                            ForEach(gameServers, id: \.id) { server in
+                                NavigationLink {
+                                    ServerDetailsView(
+                                        server: server,
+                                        response: statusManager.getResponse(
+                                            for: server
+                                        )
+                                    )
+                                } label: {
+                                    ServerGridCard(
+                                        server: server,
+                                        response: statusManager.getResponse(
+                                            for: server
+                                        ),
+                                        selectedServer: $viewModel.selectedServer
+                                    )
+                                }
+                                .tint(.primary)
+                                .task {
+                                    if statusManager.getResponse(for: server)
+                                        == nil
+                                    {
+                                        await statusManager.fetchStatus(
+                                            for: server
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        .padding()
+                    }
+                    .refreshable {
+                        statusManager.responses.removeAll()
+                        await statusManager.fetchAllStatuses(for: gameServers)
+                    }
+                }
+            }
+            .navigationTitle("Servers")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if isPreview {
+                        Button {
+                            let newServer = GameServer(
+                                name: "Test",
+                                address: "202.181.188.156",
+                                port: 27016,
+                                type: .source,
+                                image: nil
+                            )
+                            context.insert(newServer)
+                        } label: {
+                            Image(systemName: "hammer")
+                        }
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if #available(iOS 26, *) {
+                        Button {
+                            viewModel.showAddServerModal = true
+                            viewModel.selectedServer = nil
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                    } else {
+                        Button {
+                            viewModel.showAddServerModal = true
+                            viewModel.selectedServer = nil
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $viewModel.showAddServerModal) {
+            ServerFormView(
+                server: viewModel.selectedServer,
+                isShowing: $viewModel.showAddServerModal
+            ).presentationBackground(Color.background)
+        }
+    }
+
+    // MARK: - iPhone
+
+    private var iPhoneLayout: some View {
         NavigationView {
             ZStack {
                 if gameServers.isEmpty {
@@ -41,7 +158,9 @@ struct ServerListView: View {
                             NavigationLink {
                                 ServerDetailsView(
                                     server: server,
-                                    response: statusManager.getResponse(for: server)
+                                    response: statusManager.getResponse(
+                                        for: server
+                                    )
                                 )
                             } label: {
                                 ServerListCell(
@@ -54,13 +173,16 @@ struct ServerListView: View {
                             }
                             .listRowBackground(Color.clear)
                             .task {
-                                if statusManager.getResponse(for: server) == nil {
+                                if statusManager.getResponse(for: server) == nil
+                                {
                                     await statusManager.fetchStatus(for: server)
                                 }
                             }
                         }
                         .onMove(perform: { indices, newOffset in
-                            var s = gameServers.sorted(by: { $0.order < $1.order })
+                            var s = gameServers.sorted(by: {
+                                $0.order < $1.order
+                            })
                             s.move(fromOffsets: indices, toOffset: newOffset)
                             for (index, item) in s.enumerated() {
                                 item.order = index
@@ -77,66 +199,70 @@ struct ServerListView: View {
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .navigationTitle("Servers")
-            .overlay(alignment: .bottomTrailing) {
-                HStack {
-                    if isPreview {
-                        Button {
-                            let newServer = GameServer(
-                                name: "Test",
-                                address: "202.181.188.156",
-                                port: 27016,
-                                type: .source,
-                                image: nil
-                            )
-                            context.insert(newServer)
-                        } label: {
-                            Image(systemName: "hammer")
-                                .imageScale(.large)
-                                .frame(width: 42, height: 42)
-                                .foregroundColor(.white)
-                                .background(Color.brandPrimary)
-                                .clipShape(Circle())
-                                .shadow(radius: 2.5)
-                        }.padding(.horizontal)
-                    }
-                    Spacer()
-
-                    if #available(iOS 26, *) {
-                        Button {
-                            viewModel.showAddServerModal = true
-                            viewModel.selectedServer = nil
-                        } label: {
-                            Image(systemName: "plus")
-                                .imageScale(.large)
-                                .frame(width: 64, height: 64)
-                                .foregroundColor(.white)
-                        }.glassEffect(
-                            .regular.tint(.brandPrimary),
-                            in: Circle()
-                        )
-                        .padding(.vertical).padding()
-                    } else {
-                        Button {
-                            viewModel.showAddServerModal = true
-                            viewModel.selectedServer = nil
-                        } label: {
-                            Image(systemName: "plus")
-                                .imageScale(.large)
-                                .frame(width: 64, height: 64)
-                                .foregroundColor(.white)
-                                .background(Color.brandPrimary)
-                                .clipShape(Circle())
-                                .shadow(radius: 2.5)
-                        }.padding(.vertical).padding(.horizontal)
-                    }
-                }
-            }
+            .overlay(alignment: .bottomTrailing) { fabButton }
         }
         .sheet(isPresented: $viewModel.showAddServerModal) {
             ServerFormView(
                 server: viewModel.selectedServer,
                 isShowing: $viewModel.showAddServerModal
             ).presentationBackground(Color.background)
+        }
+    }
+
+    // MARK: - FAB
+
+    private var fabButton: some View {
+        HStack {
+            if isPreview {
+                Button {
+                    let newServer = GameServer(
+                        name: "Test",
+                        address: "202.181.188.156",
+                        port: 27016,
+                        type: .source,
+                        image: nil
+                    )
+                    context.insert(newServer)
+                } label: {
+                    Image(systemName: "hammer")
+                        .imageScale(.large)
+                        .frame(width: 42, height: 42)
+                        .foregroundColor(.white)
+                        .background(Color.brandPrimary)
+                        .clipShape(Circle())
+                        .shadow(radius: 2.5)
+                }.padding(.horizontal)
+            }
+            Spacer()
+
+            if #available(iOS 26, *) {
+                Button {
+                    viewModel.showAddServerModal = true
+                    viewModel.selectedServer = nil
+                } label: {
+                    Image(systemName: "plus")
+                        .imageScale(.large)
+                        .frame(width: 64, height: 64)
+                        .foregroundColor(.white)
+                }.glassEffect(
+                    .regular.tint(.brandPrimary),
+                    in: Circle()
+                )
+                .padding(.vertical).padding()
+            } else {
+                Button {
+                    viewModel.showAddServerModal = true
+                    viewModel.selectedServer = nil
+                } label: {
+                    Image(systemName: "plus")
+                        .imageScale(.large)
+                        .frame(width: 64, height: 64)
+                        .foregroundColor(.white)
+                        .background(Color.brandPrimary)
+                        .clipShape(Circle())
+                        .shadow(radius: 2.5)
+                }.padding(.vertical).padding(.horizontal)
+            }
         }
     }
 }
