@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "GST-iOS-Default-290x290.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "GST-iOS-Default-580x580.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "GST-iOS-Default-870x870.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

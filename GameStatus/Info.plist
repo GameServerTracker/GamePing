@@ -16,5 +16,16 @@
 		<string>Minecraft-Italic.otf</string>
 		<string>Minecraft-Regular.otf</string>
 	</array>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<true/>
+		<key>UIImageName</key>
+		<string>launchscreen</string>
+		<key>UIColorName</key>
+		<string>background</string>
+		<key>UILaunchScreen</key>
+		<dict/>
+	</dict>
 </dict>
 </plist>
