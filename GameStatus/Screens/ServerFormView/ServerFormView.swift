@@ -62,12 +62,6 @@ struct ServerFormView: View {
                     ignoreIconField
                 } header: {
                     Text("Server Info")
-                } footer: {
-                    if viewModel.serverType == .fivem {
-                        Text(
-                            "Following iOS constraints, This server type requires to uses an external API to fetch the server status.\ngamerservertracker.io"
-                        )
-                    }
                 }
             }.navigationTitle(
                 Text(server == nil ? "Add a server" : "Edit server")
@@ -80,12 +74,22 @@ struct ServerFormView: View {
         }
     }
 
+    private func formRow<Content: View>(
+        systemImage: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 20, height: 20)
+            content()
+        }
+    }
+
     @ViewBuilder
     private var nameField: some View {
-        HStack {
-            Image(systemName: "tag.fill")
-                .resizable()
-                .frame(width: 20, height: 20)
+        formRow(systemImage: "tag.fill") {
             TextField(
                 "Name - My Server",
                 text: $viewModel.serverName
@@ -99,10 +103,7 @@ struct ServerFormView: View {
     
     @ViewBuilder
     private var addressField: some View {
-        HStack {
-            Image(systemName: "server.rack")
-                .resizable()
-                .frame(width: 20, height: 20)
+        formRow(systemImage: "server.rack") {
             TextField(
                 viewModel.serverType == .auto ? "Hostname - myserver.net / cfxcode" : viewModel.serverType == .fivemcfx ? "CFX Code - abc123" : "Hostname - myserver.net",
                 text: $viewModel.serverAddress
@@ -151,11 +152,7 @@ struct ServerFormView: View {
     
     @ViewBuilder
     private var typeField: some View {
-        HStack {
-            Image(systemName: "gamecontroller.fill")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 20, height: 20)
+        formRow(systemImage: "gamecontroller.fill") {
             Picker("Type", selection: $viewModel.serverType) {
                 Text("Automatic").tag(GameServerType.auto)
                 Text("Minecraft Java Edition").tag(
@@ -178,10 +175,7 @@ struct ServerFormView: View {
         if ![GameServerType.fivemcfx]
             .contains(viewModel.serverType)
         {
-            HStack {
-                Image(systemName: "number")
-                    .resizable()
-                    .frame(width: 20, height: 20)
+            formRow(systemImage: "number") {
                 TextField(
                     "Port (Optional)",
                     value: $viewModel.serverPort,
@@ -197,9 +191,7 @@ struct ServerFormView: View {
         if [GameServerType.fivem, GameServerType.fivemcfx, GameServerType.minecraft]
             .contains(viewModel.serverType)
         {
-            HStack {
-                Image(systemName: "photo")
-                    .frame(width: 20, height: 20)
+            formRow(systemImage: "photo") {
                 Toggle(
                     "Ignore Server Icon",
                     isOn: $viewModel.serverIconIgnore

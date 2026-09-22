@@ -433,17 +433,11 @@ class ServerStatusManager {
         )
         let (dynamic, info, players) = await (dynamicReq, infoReq, playersReq)
 
-        if dynamic == nil || dynamic?.online == false {
+        if dynamic == nil {
             self.responses[server.id] = .offline
             return
         }
 
-        let playersMax: Int? = {
-            if let max = dynamic?.sv_maxclients {
-                return Int(max)
-            }
-            return nil
-        }()
 
         let keywords: [String]? = {
             if let tags = info?.vars?.tags {
@@ -491,7 +485,7 @@ class ServerStatusManager {
         let status = ServerStatus(
             online: true,
             playersOnline: dynamic?.clients,
-            playersMax: playersMax,
+            playersMax: dynamic?.maxclients,
             players: playersList,
             name: dynamic?.hostname,
             game: dynamic?.gametype,
@@ -503,7 +497,6 @@ class ServerStatusManager {
             os: os,
             keywords: keywords,
         )
-        print(status)
         self.responses[server.id] = status
     }
     
@@ -611,7 +604,6 @@ class ServerStatusManager {
         serverId: UUID
     ) {
         if let info = info {
-            print(info)
             do {
                 let decoder = JSONDecoder()
                 let response = try decoder.decode(

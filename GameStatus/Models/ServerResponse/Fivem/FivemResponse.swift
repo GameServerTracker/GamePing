@@ -155,14 +155,7 @@ struct FivemDynamicResponse: Codable {
     }
 }
 
-struct FivemPlayersResponse: Codable {
-    let players: [FivemPlayer]?
-}
-
 struct FivemPlayer: Codable {
-    let endpoint: String
-    let id: Int
-    let identifiers: [String]
     let name: String
     let ping: Int
 }
